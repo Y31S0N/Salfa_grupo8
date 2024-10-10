@@ -1,3 +1,4 @@
+import Header from "@/components/header";
 import { Navigate, Outlet } from "react-router-dom";
 import { useSigninCheck } from "reactfire";
 
@@ -9,7 +10,14 @@ const PrivateLayout = () => {
   }
 
   if (singInCheckResult.signedIn) {
-    return <Outlet />;
+    return (
+      <div>
+        <Header />
+        <main>
+          <Outlet />
+        </main>
+      </div>
+    );
   }
 
   return <Navigate to="/" />;

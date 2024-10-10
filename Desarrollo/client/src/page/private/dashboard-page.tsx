@@ -1,6 +1,6 @@
 import { useUser } from "reactfire";
 
-const Dashboard = () => {
+const Home = () => {
   const { data: user } = useUser();
 
   return (
@@ -9,4 +9,4 @@ const Dashboard = () => {
     </h1>
   );
 };
-export default Dashboard;
+export default Home;
