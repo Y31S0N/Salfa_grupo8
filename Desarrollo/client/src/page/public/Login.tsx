@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { auth } from "@/config/firebase";
+import firebaseApp from "../../config/firebase";
 
+const auth = getAuth(firebaseApp);
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -19,12 +19,12 @@ const Login = () => {
       );
       const user = userCredential.user;
       localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
+      localStorage.setItem("email", JSON.stringify(email));
+      navigate("/home");
     } catch (error) {
-      console.error(error);
+      alert("credenciales invalidas");
     }
   };
-
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
