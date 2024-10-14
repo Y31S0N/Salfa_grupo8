@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import CrearUsuarioEnFirebase from "@/components/crearusuariofire";
 
-const C_usuario = () => {
+const N_usuario = () => {
   const [formData, setFormData] = useState({
     rut: "",
     nombre: "",
@@ -39,7 +39,7 @@ const C_usuario = () => {
       ...prevData,
       rut,
     }));
-    setIsRutValid(isValid); // Guardamos el estado de la validez del RUT
+    setIsRutValid(isValid);
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -56,47 +56,46 @@ const C_usuario = () => {
       return;
     }
     const { rut, correo } = formData;
+    interface VerificacionUsuarioResponse {
+      accion: string;
+      mensaje: string;
+    }
     try {
-      const response = await axios.post(
+      const response = await axios.post<VerificacionUsuarioResponse>(
         "http://localhost:5000/api/verificarUsuario",
         {
           rut,
           correo,
         }
       );
-      const { existeEnBD, existeEnFirebase } = response.data as {
-        existeEnBD: boolean;
-        existeEnFirebase: boolean;
-      };
-      if (existeEnBD && !existeEnFirebase) {
-        // Si existe en la BD pero no en Firebase, crearlo en Firebase
-        CrearUsuarioEnFirebase(correo);
+
+      const { accion, mensaje } = response.data;
+
+      alert(mensaje);
+
+      if (accion === "Crear en ambos") {
+        console.log("Se creará el usuario en ambos lados.");
+        CrearUsuarioEnFirebase(formData.correo);
+      } else if (accion === "Crear solo en Firebase") {
+        console.log("Se creará el usuario solo en Firebase.");
+        CrearUsuarioEnFirebase(formData.correo);
+      } else if (accion === "Crear solo en la base de datos") {
+        console.log("Se creará el usuario solo en la base de datos.");
+      } else if (accion === "No crear") {
+        console.log("El usuario ya existe en ambos lados. No se creará.");
+      } else if (accion === "Error") {
+        console.error(mensaje);
       }
-      //
-      else if (!existeEnBD && existeEnFirebase) {
-        // Si existe en Firebase pero no en la BD, crear usuario normalmente en la BD
-        alert(
-          "El usuario existe en Firebase. Creando usuario en la base de datos."
-        );
-      } else if (!existeEnBD && !existeEnFirebase) {
-        // Si no existe ni en la BD ni en Firebase, crearlo en ambos lados
-        CrearUsuarioEnFirebase(formData.correo); // Deberías tener otra API para crear el usuario en la base de datos
-        alert("Usuario creado en Firebase y en la base de datos.");
-      } else {
-        alert("Ya existe un usuario con el mismo RUT o correo.");
-      }
-    } catch (err) {
-      console.log(err);
-      alert("Error al verificar el usuario. Intente nuevamente.");
+    } catch (error) {
+      console.error("Ocurrió un error en la verificación", error);
+      alert("Error en la verificación del usuario");
     }
-    // Si pasa las validaciones, crear el nuevo usuario (simulación)
-    // Aquí puedes agregar la lógica para enviar los datos al servidor
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-4"
+      //className="space-y-6 max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-4"
     >
       <h2 className="text-2xl font-bold text-center mb-6">Crear Usuario</h2>
 
@@ -179,11 +178,11 @@ const C_usuario = () => {
         </Select>
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full mt-4">
         Crear Usuario
       </Button>
     </form>
   );
 };
 
-export default C_usuario;
+export default N_usuario;
