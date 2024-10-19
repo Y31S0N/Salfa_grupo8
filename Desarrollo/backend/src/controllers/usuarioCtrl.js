@@ -6,7 +6,7 @@ export const listarUsuario = async (req, res) => {
 
     try {
         const userRecord = await auth.getUser(uid);
-        res.status(200).json(userRecord);
+        res.send(userRecord);
     } catch (error) {
         console.error("Error al listar el usuario:", error);
         res.status(500).json({ error: error.message });

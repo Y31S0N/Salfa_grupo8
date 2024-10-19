@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from "cors";
 import usuarioRoutes from './routes/usuario.routes.js';
+import cursoRoutes from './routes/curso.routes.js';
 
 const app = express();
 
@@ -11,10 +12,11 @@ app.use(
     credentials: true, // Si usamos cookies o autenticación basada en sesiones
   })
 );
+app.use(express.json());
 
 app.use(usuarioRoutes);
+app.use(cursoRoutes);
 
-app.use(express.json());
 
 
 const PORT = process.env.PORT || 5000;
