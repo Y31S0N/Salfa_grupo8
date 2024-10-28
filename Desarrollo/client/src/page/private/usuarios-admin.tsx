@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
@@ -72,7 +73,12 @@ export default function ManejoUsuarios() {
           </Button>
         </DialogTrigger>
         <DialogContent>
-          <DialogHeader></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+            <DialogDescription>
+              Ingrese los detalles del nuevo usuario aquí.
+            </DialogDescription>
+          </DialogHeader>
           <N_usuario />
         </DialogContent>
       </Dialog>

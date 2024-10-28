@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import CrearUsuarioEnFirebase from "@/components/crearusuariofire";
 
 const N_usuario = () => {
   const [formData, setFormData] = useState({
@@ -74,17 +73,15 @@ const N_usuario = () => {
       alert(mensaje);
 
       if (accion === "Crear en ambos") {
-        console.log("Se creará el usuario en ambos lados.");
-        CrearUsuarioEnFirebase(formData.correo);
+        console.log(mensaje);
       } else if (accion === "Crear solo en Firebase") {
-        console.log("Se creará el usuario solo en Firebase.");
-        CrearUsuarioEnFirebase(formData.correo);
+        console.log(mensaje);
       } else if (accion === "Crear solo en la base de datos") {
-        console.log("Se creará el usuario solo en la base de datos.");
+        console.log(mensaje);
       } else if (accion === "No crear") {
-        console.log("El usuario ya existe en ambos lados. No se creará.");
+        console.log(mensaje);
       } else if (accion === "Error") {
-        console.error(mensaje);
+        console.log(mensaje);
       }
     } catch (error) {
       console.error("Ocurrió un error en la verificación", error);
@@ -97,8 +94,6 @@ const N_usuario = () => {
       onSubmit={handleSubmit}
       //className="space-y-6 max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-4"
     >
-      <h2 className="text-2xl font-bold text-center mb-6">Crear Usuario</h2>
-
       <div className="space-y-2">
         <Label htmlFor="rut">RUT</Label>
         <RutInput value={formData.rut} onChange={handleRutChange} />

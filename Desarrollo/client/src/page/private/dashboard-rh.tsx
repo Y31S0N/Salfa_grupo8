@@ -238,7 +238,7 @@ export default function DashboardRRHH() {
                           `${name} ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {filteredCourseData.map((entry, index) => (
+                        {filteredCourseData.map((_, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={COLORS[index % COLORS.length]}
