@@ -1,38 +1,19 @@
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { Button } from "./ui/button";
-import { useAuth, useSigninCheck } from "reactfire";
-import { useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
 
-const Header = () => {
-  const auth = useAuth();
-  const navigate = useNavigate();
-
-  const { status, data: singInCheckResult } = useSigninCheck();
-
-  const handleClickSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    navigate("/dashboard");
-  };
-
-  const handleClickSignOut = async () => {
-    await signOut(auth);
-  };
+interface HeaderProps {
+  toggleNav: any;
+}
+function Header({ toggleNav }: HeaderProps) {
   return (
-    <div className="bg-gray-700 py-4">
-      <div className="container flex items-center">
-        <p className="text-white">ReactFire</p>
-        <nav className="ml-auto">
-          {status == "loading" ? (
-            <Button disabled>Loading...</Button>
-          ) : singInCheckResult.signedIn ? (
-            <Button onClick={handleClickSignOut}>SigOut</Button>
-          ) : (
-            <Button onClick={handleClickSignIn}>Sigin</Button>
-          )}
-        </nav>
-      </div>
-    </div>
+    <header className="bg-white shadow-md p-4 flex items-center justify-between md:hidden">
+      <button
+        onClick={toggleNav}
+        className="p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+      >
+        <Menu size={24} className="text-gray-600" />
+      </button>
+      <h1 className="text-xl font-bold text-gray-800">Mi Dashboard</h1>
+    </header>
   );
-};
+}
 export default Header;

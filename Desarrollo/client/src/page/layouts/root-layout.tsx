@@ -1,11 +1,20 @@
-import Header from "@/components/header";
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+import { useSigninCheck } from "reactfire";
 
 const RootLayout = () => {
+  const { status, data: singInCheckResult } = useSigninCheck();
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (singInCheckResult.signedIn == true) {
+    return <Navigate to="/home" />;
+  }
+
   return (
     <div>
-      <Header />
-      <main className="container my-5">
+      <main>
         <Outlet />
       </main>
     </div>
