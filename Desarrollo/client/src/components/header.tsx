@@ -1,38 +1,34 @@
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { Button } from "./ui/button";
-import { useAuth, useSigninCheck } from "reactfire";
-import { useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { useUser } from "../contexts/UserContext";
 
-const Header = () => {
-  const auth = useAuth();
-  const navigate = useNavigate();
+interface HeaderProps {
+  toggleNav: any;
+}
 
-  const { status, data: singInCheckResult } = useSigninCheck();
+function Header({ toggleNav }: HeaderProps) {
+  const { user } = useUser();
 
-  const handleClickSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    navigate("/dashboard");
-  };
-
-  const handleClickSignOut = async () => {
-    await signOut(auth);
-  };
   return (
-    <div className="bg-gray-700 py-4">
-      <div className="container flex items-center">
-        <p className="text-white">ReactFire</p>
-        <nav className="ml-auto">
-          {status == "loading" ? (
-            <Button disabled>Loading...</Button>
-          ) : singInCheckResult.signedIn ? (
-            <Button onClick={handleClickSignOut}>SigOut</Button>
-          ) : (
-            <Button onClick={handleClickSignIn}>Sigin</Button>
-          )}
-        </nav>
+    <header className="bg-white shadow-md p-4 flex items-center justify-between md:hidden">
+      <button
+        onClick={toggleNav}
+        className="p-2 rounded-md bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+      >
+        <Menu size={24} className="text-gray-600" />
+      </button>
+      <div>
+        <h1 className="text-xl font-bold text-gray-800">
+          Bienvenido{" "}
+          {user?.displayName && user.displayName.trim() !== ""
+            ? user.displayName
+            : user?.email}
+        </h1>
+        {user?.role && (
+          <p className="text-sm text-gray-600">Rol: {user.role}</p>
+        )}
       </div>
-    </div>
+    </header>
   );
-};
+}
+
 export default Header;

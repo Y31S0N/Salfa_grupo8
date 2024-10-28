@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 import { auth } from "./firebaseAdminConfig.js"; // Asegúrate de que esté correctamente importado
-import datosPrueba from "./datosprueba.js"; // Importa tus datos de prueba
+import verificarUsuario from "./verificarusuario.js";
 
 const app = express();
 
@@ -18,25 +18,11 @@ app.use(express.json()); // Para poder leer el cuerpo de las solicitudes JSON
 
 // Endpoint para verificar usuario
 app.post("/api/verificarUsuario", async (req, res) => {
-  const { correo, rut } = req.body;
-  // Verificar en datos de prueba
-  const existeEnBD = datosPrueba.some(
-    (usuario) => usuario.rut === rut || usuario.correo === correo
-  );
-
-  // Verificar en Firebase
-  try {
-    const userRecord = await auth.getUserByEmail(correo);
-    const existeEnFirebase = !!userRecord;
-
-    return res.json({ existeEnBD, existeEnFirebase });
-  } catch (error) {
-    // Si el usuario no existe en Firebase
-    const existeEnFirebase = false;
-
-    return res.json({ existeEnBD, existeEnFirebase });
-  }
+  const { rut, correo } = req.body;
+  const resultado = await verificarUsuario(rut, correo);
+  return res.json(resultado);
 });
+
 app.post("/api/crearUsuario", async (req, res) => {
   const { correo, contrasena } = req.body;
 

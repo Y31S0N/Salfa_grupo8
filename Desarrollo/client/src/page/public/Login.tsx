@@ -1,27 +1,29 @@
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
-import { auth } from "@/config/firebase";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useUser();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-      localStorage.setItem("user", JSON.stringify(user));
-      navigate("/dashboard");
+      await login(email, password);
+      navigate("/home");
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        setError(
+          error.message ||
+            "Error en el inicio de sesión. Por favor, intente de nuevo."
+        );
+      } else {
+        setError("Ocurrió un error inesperado. Por favor, intente de nuevo.");
+      }
     }
   };
 
@@ -31,6 +33,7 @@ const Login = () => {
         <h3 className="text-2xl font-bold text-center text-gray-800">
           Login to your account
         </h3>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         <form onSubmit={handleSubmit} className="login-form">
           <div className="mt-4">
             <div>
@@ -83,4 +86,5 @@ const Login = () => {
     </div>
   );
 };
+
 export default Login;
