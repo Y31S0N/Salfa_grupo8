@@ -18,9 +18,11 @@ import Agregar_cursos from "@/page/private/agregar_cursos";
 import Listado_cursos from "@/page/private/listado_cursos";
 import Vercurso from "@/page/private/vercurso";
 import Agregar_modulos from "@/page/private/agregar_modulos";
+import Modificar_modulos from "@/page/private/modificar_modulos";
 import Agregar_lecciones from "@/page/private/agregar_lecciones";
 import Agregar_contenido from "@/page/private/agregar_contenido";
-import Modificar_cursos from "@/page/private/modificar_curso";
+import Modificar_curso from "@/page/private/modificar_curso";
+import Modificar_lecciones from "@/page/private/modificar_lecciones";
 
 import { createBrowserRouter } from "react-router-dom";
 import DashboardRRHH from "@/page/private/dashboard-rh";
@@ -108,17 +110,17 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/modificar_curso",
+    path: "/modificar_curso/:id",
     element: <PrivateLayout_clean />,
     children: [
       {
         index: true,
-        element: <Modificar_cursos />,
+        element: <Modificar_curso />,
       },
     ],
   },
   {
-    path: "/vercurso",
+    path: "/vercurso/:id",
     element: <PrivateLayout_flex />,
     children: [
       {
@@ -127,8 +129,9 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  //MODULOS
   {
-    path: "/agregar_modulos",
+    path: "/cursos/:id/agregar_modulos", // Cambiado para incluir el ID del curso
     element: <PrivateLayout_clean />,
     children: [
       {
@@ -138,7 +141,20 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: "/agregar_lecciones",
+    path: "/cursos/:cursoId/modulos/:moduloId/modificar", 
+    element: <PrivateLayout_clean />,
+    children: [
+      {
+        index: true,
+        element: <Modificar_modulos />, // Asegúrate de que este componente maneje la carga del módulo
+      },
+    ],
+  },
+  //MODULOS
+
+  //LECCIONES
+  {
+    path: "/cursos/:cursoId/modulos/:moduloId/agregar_lecciones", 
     element: <PrivateLayout_clean />,
     children: [
       {
@@ -147,6 +163,17 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: "/cursos/:cursoId/modulos/:moduloId/modificar_lecciones/:leccionId", // Incluye el ID de la lección
+    element: <PrivateLayout_clean />,
+    children: [
+      {
+        index: true,
+        element: <Modificar_lecciones />,
+      },
+    ],
+  },
+  //LECCIONES
   {
     path: "/agregar_contenido",
     element: <PrivateLayout_clean />,

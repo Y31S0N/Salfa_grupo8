@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from "cors";
 import usuarioRoutes from './routes/usuario.routes.js';
+import cursoRoutes from './routes/curso.routes.js';
+import moduloRoutes from './routes/modulo.routes.js';
+import leccionCurso from './routes/leccionCurso.routes.js'
 
 const app = express();
 
@@ -15,6 +18,10 @@ app.use(
 app.use(usuarioRoutes);
 
 app.use(express.json());
+app.use('/api', cursoRoutes)
+app.use('/api', moduloRoutes)
+app.use('/api', leccionCurso)
+app.use('/api', usuarioRoutes)
 
 
 const PORT = process.env.PORT || 5000;

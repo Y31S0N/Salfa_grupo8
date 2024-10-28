@@ -1,5 +1,8 @@
 import auth from "../../firebaseAdminConfig.js";
 import datosPrueba  from "../../datosprueba.js";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export const listarUsuario = async (req, res) => {
     const { uid } = req.params;
@@ -18,11 +21,12 @@ export const listarUsuarios = async (req, res) => {
         const usuarios = [];
         let nextPageToken;
 
-        do {
-            const listUsersResult = await auth.listUsers(1000, nextPageToken);
-            usuarios.push(...listUsersResult.users);
-            nextPageToken = listUsersResult.pageToken;
-        } while (nextPageToken);
+        // try {
+        //     const usuarios = await prisma.usuario.findMany();
+        //     res.json(usuarios);
+        // } catch(err) {
+        //     console.log(err);
+        // };
 
         res.status(200).json(usuarios);
     } catch (error) {

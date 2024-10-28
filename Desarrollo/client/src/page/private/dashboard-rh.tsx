@@ -28,11 +28,11 @@ const userData = {
   active: 450,
   inactive: 50,
   byDepartment: [
-    { name: "Ventas", total: 150, active: 140 },
-    { name: "Marketing", total: 100, active: 95 },
-    { name: "Desarrollo", total: 120, active: 110 },
-    { name: "RRHH", total: 50, active: 45 },
-    { name: "Finanzas", total: 80, active: 60 },
+    { name: "Mantención", total: 150, active: 140 },
+    { name: "Carga", total: 100, active: 95 },
+    { name: "Seguridad", total: 120, active: 110 },
+    { name: "Prevención", total: 50, active: 45 },
+    { name: "RR.HH.", total: 80, active: 60 },
   ],
 };
 
@@ -41,11 +41,11 @@ const courseData = {
   completed: 1200,
   completionRate: 80,
   byDepartment: [
-    { name: "Ventas", completed: 400, total: 450 },
-    { name: "Marketing", completed: 280, total: 300 },
-    { name: "Desarrollo", completed: 320, total: 360 },
+    { name: "Mantención", completed: 400, total: 450 },
+    { name: "Carga", completed: 280, total: 300 },
+    { name: "Seguridad", completed: 320, total: 360 },
     { name: "RRHH", completed: 90, total: 100 },
-    { name: "Finanzas", completed: 110, total: 150 },
+    { name: "RR.HH.", completed: 110, total: 150 },
   ],
 };
 
@@ -78,7 +78,7 @@ export default function DashboardRRHH() {
             <SelectValue placeholder="Seleccionar Área" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Todos">Todos los departamentos</SelectItem>
+            <SelectItem value="Todos">Todas las Áreas</SelectItem>
             {userData.byDepartment.map((dept) => (
               <SelectItem key={dept.name} value={dept.name}>
                 {dept.name}
@@ -110,7 +110,7 @@ export default function DashboardRRHH() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Usuarios Activos
+                  Usuarios Interactivos
                 </CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
@@ -133,7 +133,7 @@ export default function DashboardRRHH() {
 
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Usuarios por Departamento</CardTitle>
+              <CardTitle>Usuarios por Área</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">

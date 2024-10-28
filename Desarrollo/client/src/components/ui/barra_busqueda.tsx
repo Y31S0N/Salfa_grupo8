@@ -1,12 +1,15 @@
+// components/ui/barra_busqueda.tsx
 import React, { useState } from "react";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  setFilter: (filter: 'habilitados' | 'deshabilitados') => void; // Prop para establecer el filtro
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch, setFilter }) => {
   const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false); // Estado para controlar el menú de áreas
+  const [isOpen, setIsOpen] = useState(false);
+  const [filterText, setFilterText] = useState("Filtrar por estado");
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
@@ -21,7 +24,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     setIsOpen((prev) => !prev);
   };
 
-  const areas = ["Electricidad", "Metalúrgica", "General"]; // Áreas disponibles
+  const handleFilterChange = (filter: 'habilitados' | 'deshabilitados') => {
+    setFilter(filter);
+    setFilterText(filter === 'habilitados' ? 'Cursos Habilitados' : 'Cursos Deshabilitados');
+    setIsOpen(false); // Cierra el menú al seleccionar un estado
+  };
 
   return (
     <div className="w-full max-w-3xl mx-auto mb-4 relative">
@@ -42,28 +49,28 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         {/* Botón Filtrar */}
         <button
           onClick={toggleMenu}
-          className="bg-gray-300 text-black px-4 py-2 rounded-lg ml-2 hover:bg-gray-400 focus:outline-none min-w-[150px] text-center"
-          style={{ height: "42px" }} // Misma altura que el botón "Buscar"
+          className="bg-gray-300 text-black rounded-lg ml-2 hover:bg-gray-400 focus:outline-none min-w-[200px] text-center" // Establecido a un ancho mínimo más grande
+          style={{ height: "42px", padding: "0 8px", whiteSpace: "nowrap" }} // Asegura que el texto no se divida
         >
-          Filtrar por área
+          {filterText}
         </button>
       </form>
 
       {/* Menú desplegable */}
       {isOpen && (
         <div className="absolute right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-lg z-20 w-48">
-          {areas.map((area) => (
-            <div
-              key={area}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => {
-                console.log(`Filtrando por ${area}`);
-                setIsOpen(false); // Cierra el menú al seleccionar un área
-              }}
-            >
-              {area}
-            </div>
-          ))}
+          <div
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            onClick={() => handleFilterChange('habilitados')}
+          >
+            Habilitados
+          </div>
+          <div
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+            onClick={() => handleFilterChange('deshabilitados')}
+          >
+            Deshabilitados
+          </div>
         </div>
       )}
     </div>
