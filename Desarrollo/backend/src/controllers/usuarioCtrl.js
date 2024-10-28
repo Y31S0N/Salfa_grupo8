@@ -1,6 +1,7 @@
 import { auth } from "../../firebase/firebaseAdminConfig.js";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
+import auth from "../../firebaseAdminConfig.js";
 
 import {
   JWT_SECRET,
@@ -58,6 +59,25 @@ export const crearUsuario = async (req, res) => {
   } catch (error) {
     console.error("Error al crear usuario:", error);
     res.status(500).json({ mensaje: "Error al crear usuario" });
+  }
+};
+
+export const listarUsuarios = async (req, res) => {
+  try {
+    const usuarios = [];
+    let nextPageToken;
+
+    // try {
+    //     const usuarios = await prisma.usuario.findMany();
+    //     res.json(usuarios);
+    // } catch(err) {
+    //     console.log(err);
+    // };
+
+    res.status(200).json(usuarios);
+  } catch (error) {
+    console.error("Error al listar todos los usuarios:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 

@@ -15,9 +15,11 @@ import Agregar_cursos from "@/page/private/agregar_cursos";
 import Listado_cursos from "@/page/private/listado_cursos";
 import Vercurso from "@/page/private/vercurso";
 import Agregar_modulos from "@/page/private/agregar_modulos";
+//import Modificar_modulos from "@/page/private/modificar_modulos";
 import Agregar_lecciones from "@/page/private/agregar_lecciones";
 import Agregar_contenido from "@/page/private/agregar_contenido";
-import Modificar_cursos from "@/page/private/modificar_curso";
+//import Modificar_curso from "@/page/private/modificar_curso";
+//import Modificar_lecciones from "@/page/private/modificar_lecciones";
 
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
@@ -183,4 +185,171 @@ export const router = createBrowserRouter([
   //     },
   //   ],
   // },
-]);
+//   {
+//     path: "/listado_cursos",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Listado_cursos />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/listado_cursos_usuario",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <ListadoCursosUsuario />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/agregar_cursos",
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Agregar_cursos />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/modificar_curso/:id",
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Modificar_curso />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/vercurso/:id",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Vercurso />,
+//       },
+//     ],
+//   },
+//   //MODULOS
+//   {
+//     path: "/cursos/:id/agregar_modulos", // Cambiado para incluir el ID del curso
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Agregar_modulos />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/cursos/:cursoId/modulos/:moduloId/modificar", 
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Modificar_modulos />, // Asegúrate de que este componente maneje la carga del módulo
+//       },
+//     ],
+//   },
+//   //MODULOS
+
+//   //LECCIONES
+//   {
+//     path: "/cursos/:cursoId/modulos/:moduloId/agregar_lecciones", 
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Agregar_lecciones />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/cursos/:cursoId/modulos/:moduloId/modificar_lecciones/:leccionId", // Incluye el ID de la lección
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Modificar_lecciones />,
+//       },
+//     ],
+//   },
+//   //LECCIONES
+//   {
+//     path: "/agregar_contenido",
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Agregar_contenido />,
+//       },
+//     ],
+//   },
+
+//   // USUARIOS
+//   {
+//     path: "/nuevo_usuario",
+//     element: <PrivateLayout_clean />,
+//     children: [
+//       {
+//         index: true,
+//         element: <N_usuario />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/usuarios",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <ManejoUsuarios />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/perfil",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <Perfiladm />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/dashboard-rh",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <DashboardRRHH />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/dashboard-perfil-rh",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <DetalleUsuarioRRHH />,
+//       },
+//     ],
+//   },
+//   {
+//     path: "/perfilUsuario",
+//     element: <PrivateLayout_flex />,
+//     children: [
+//       {
+//         index: true,
+//         element: <PerfilUsuario />,
+//       },
+//     ],
+//   },
+// ]);

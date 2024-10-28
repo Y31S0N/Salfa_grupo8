@@ -3,6 +3,7 @@ import cors from "cors";
 import pkg from "pg";
 const { Pool } = pkg;
 import usuarioRoutes from "./routes/usuario.routes.js";
+import usuarioRoutes from "./routes/usuario.routes.js";
 
 const app = express();
 
