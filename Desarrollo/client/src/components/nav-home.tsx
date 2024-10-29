@@ -1,18 +1,21 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { ReactNode } from "react";
-import { signOut, getAuth } from "firebase/auth";
-import firebaseApp from "../config/firebase";
-const auth = getAuth(firebaseApp);
+import { signOut } from "firebase/auth";
+import { auth } from "../config/firebase";
+
 interface NavItemProps {
   to: string;
   icon: ReactNode;
   text: string;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
-function NavItem({ to, icon, text, onClick }: NavItemProps) {
+
+const NavItem: React.FC<NavItemProps> = ({ to, icon, text, onClick }) => {
   const handleClickSignOut = async () => {
     await signOut(auth);
   };
+
   if (onClick) {
     return (
       <li>
@@ -27,6 +30,7 @@ function NavItem({ to, icon, text, onClick }: NavItemProps) {
       </li>
     );
   }
+
   return (
     <li>
       <Link
@@ -38,5 +42,6 @@ function NavItem({ to, icon, text, onClick }: NavItemProps) {
       </Link>
     </li>
   );
-}
+};
+
 export default NavItem;

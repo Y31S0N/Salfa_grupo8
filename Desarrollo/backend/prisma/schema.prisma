@@ -22,6 +22,7 @@ model CursoCapacitacion {
   estado_curso      Boolean
   modulos           Modulo[]
   cursoAsignados    CursoAsignado[]
+  areas             CursoArea[]
 }
 
 model Modulo {
@@ -29,50 +30,55 @@ model Modulo {
   nombre_modulo      String
   descripcion_modulo String
   cursoId            Int
+  estado_modulo      Boolean
   curso              CursoCapacitacion @relation(fields: [cursoId], references: [id_curso])
   lecciones          LeccionCurso[]
 }
 
 model LeccionCurso {
-  id_leccion                Int                    @id @default(autoincrement())
-  nombre_leccion            String
-  descripcion_leccion       String
-  fecha_de_creacion_leccion DateTime
-  moduloId                  Int
-  modulo                    Modulo                 @relation(fields: [moduloId], references: [id_modulo])
-  contenidos                Contenido[]
-  Cumplimiento_leccion      Cumplimiento_leccion[]
+  id_leccion                     Int                              @id @default(autoincrement())
+  nombre_leccion                 String
+  descripcion_leccion            String
+  fecha_de_creacion_leccion      DateTime
+  estado_leccion                 Boolean
+  moduloId                       Int
+  modulo                         Modulo                           @relation(fields: [moduloId], references: [id_modulo])
+  contenidos                     Contenido[]
+  Cumplimiento_leccion           Cumplimiento_leccion[]
+  RegistroVisualizacionContenido RegistroVisualizacionContenido[]
 }
 
 model Contenido {
-  id_contenido   Int          @id @default(autoincrement())
-  archivo        String
-  url            String?
-  tipo_contenido String
-  leccionId      Int
-  leccion        LeccionCurso @relation(fields: [leccionId], references: [id_leccion])
+  id_contenido                   Int                              @id @default(autoincrement())
+  archivo                        String
+  url                            String?
+  tipo_contenido                 String
+  leccionId                      Int
+  leccion                        LeccionCurso                     @relation(fields: [leccionId], references: [id_leccion])
+  RegistroVisualizacionContenido RegistroVisualizacionContenido[]
 }
 
 model Usuario {
-  rut                    String                 @id
-  nombre                 String
-  apellido_paterno       String
-  apellido_materno       String
-  correo                 String                 @unique
-  contrasena             String
-  rolId                  Int
-  rol                    Rol                    @relation(fields: [rolId], references: [id_rol])
-  encuestasAsignadas     EncuestaAsignada[]
-  respuestas             Respuesta[]
-  cursoAsignados         CursoAsignado[]
-  cumplimiento_lecciones Cumplimiento_leccion[]
-  Area                   Area?                  @relation(fields: [areaId_area], references: [id_area])
-  areaId_area            Int?
+  rut                            String                           @id
+  nombre                         String
+  apellido_paterno               String
+  apellido_materno               String
+  correo                         String                           @unique
+  rolId                          Int
+  areaId                         Int?
+  refreshToken                   String? // Nuevo campo para almacenar el refresh token
+  rol                            Rol                              @relation(fields: [rolId], references: [id_rol])
+  Area                           Area?                            @relation(fields: [areaId], references: [id_area])
+  encuestasAsignadas             EncuestaAsignada[]
+  respuestas                     Respuesta[]
+  cursoAsignados                 CursoAsignado[]
+  cumplimiento_lecciones         Cumplimiento_leccion[]
+  RegistroVisualizacionContenido RegistroVisualizacionContenido[]
 }
 
 model CursoAsignado {
   fecha_asignacion DateTime
-  fecha_acceso     DateTime
+  fecha_acceso     DateTime?
   cursoId          Int
   usuarioId        String
   curso            CursoCapacitacion @relation(fields: [cursoId], references: [id_curso])
@@ -93,15 +99,39 @@ model Cumplimiento_leccion {
 }
 
 model Area {
-  id_area     Int       @id @default(autoincrement())
+  id_area     Int         @id @default(autoincrement())
   nombre_area String
   usuarios    Usuario[]
+  cursos      CursoArea[]
+}
+
+model CursoArea {
+  id_curso Int
+  id_area  Int
+
+  curso CursoCapacitacion @relation(fields: [id_curso], references: [id_curso], onDelete: Cascade)
+  area  Area              @relation(fields: [id_area], references: [id_area], onDelete: Cascade)
+
+  @@id([id_curso, id_area]) // Definimos una clave primaria compuesta
 }
 
 model Rol {
   id_rol     Int       @id @default(autoincrement())
   nombre_rol String
   usuarios   Usuario[]
+}
+
+model RegistroVisualizacionContenido {
+  id_visualizacion Int      @id @default(autoincrement())
+  usuarioId        String // Referencia al usuario que visualiza/descarga
+  contenidoId      Int // Referencia al contenido específico
+  leccionId        Int // Referencia a la lección específica
+  tipo_interaccion Boolean // Valores posibles: "visualizado", "descargado"
+  timestamp        DateTime // Fecha y hora de la interacción
+
+  usuario   Usuario      @relation(fields: [usuarioId], references: [rut])
+  contenido Contenido    @relation(fields: [contenidoId], references: [id_contenido])
+  leccion   LeccionCurso @relation(fields: [leccionId], references: [id_leccion])
 }
 
 model Encuesta {
@@ -148,8 +178,8 @@ model Respuesta {
   usuario             Usuario         @relation(fields: [usuarioId], references: [rut])
   opcionId            Int
   opcion              OpcionRespuesta @relation(fields: [opcionId], references: [id_opcion])
-  Pregunta            Pregunta?       @relation(fields: [preguntaId_pregunta], references: [id_pregunta])
-  preguntaId_pregunta Int?
+  Pregunta            Pregunta        @relation(fields: [preguntaId_pregunta], references: [id_pregunta])
+  preguntaId_pregunta Int
 
   @@id([usuarioId, opcionId])
 }

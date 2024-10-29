@@ -1,9 +1,13 @@
 import { Menu } from "lucide-react";
+import { useUser } from "../contexts/UserContext";
 
 interface HeaderProps {
   toggleNav: any;
 }
+
 function Header({ toggleNav }: HeaderProps) {
+  const { user } = useUser();
+
   return (
     <header className="bg-white shadow-md p-4 flex items-center justify-between md:hidden">
       <button
@@ -12,8 +16,19 @@ function Header({ toggleNav }: HeaderProps) {
       >
         <Menu size={24} className="text-gray-600" />
       </button>
-      <h1 className="text-xl font-bold text-gray-800">Mi Dashboard</h1>
+      <div>
+        <h1 className="text-xl font-bold text-gray-800">
+          Bienvenido{" "}
+          {user?.displayName && user.displayName.trim() !== ""
+            ? user.displayName
+            : user?.email}
+        </h1>
+        {user?.role && (
+          <p className="text-sm text-gray-600">Rol: {user.role}</p>
+        )}
+      </div>
     </header>
   );
 }
+
 export default Header;
