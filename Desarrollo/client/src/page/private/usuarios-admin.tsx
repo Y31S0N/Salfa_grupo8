@@ -21,23 +21,45 @@ import {
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import N_usuario from "./nuevo-usuario";
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
+interface Usuario {
+  rut: string;
+  nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  correo: string;
+  contrasena: string;
+  rol: string;
+  area: string;
 }
 
 // Simular datos de usuarios
-const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  name: `Usuario ${i + 1}`,
-  email: `usuario${i + 1}@example.com`,
-}));
+const usuarios: Usuario[] = [{
+  rut: "217652343",
+  nombre: "Carlos", apellido_paterno: "Alcayaga", apellido_materno: "Araneda",
+  correo: "ca.alcayaga@salfamantenciones.cl", contrasena: "calcayaga2176",
+  rol: "1",
+  area: "2",
+},
+{
+  rut: "22345876",
+  nombre: "José", apellido_paterno: "Irving", apellido_materno: "Correa",
+  correo: "cualquiera@salfamantenciones", contrasena: "jose22",
+  rol: "3",
+  area: "2",
+},
+{
+  rut: "19345476",
+  nombre: "Josefa", apellido_paterno: "Aliaga", apellido_materno: "Flores",
+  correo: "jo.aliaga@salfamantenciones.cl", contrasena: "josefa19",
+  rol: "3",
+  area: "1",
+}
+];
 
 export default function ManejoUsuarios() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<Usuario[]>(usuarios);
   const [currentPage, setCurrentPage] = useState(1);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState(null);
 
   const usersPerPage = 10;
   const totalPages = Math.ceil(users.length / usersPerPage);
@@ -49,15 +71,16 @@ export default function ManejoUsuarios() {
 
   const handleUpdateUser = () => {
     if (editingUser) {
+      const { rut } = editingUser;
       setUsers(
-        users.map((user) => (user.id === editingUser.id ? editingUser : user))
+        users.map((user) => (user.rut === rut ? editingUser : user))
       );
       setEditingUser(null);
     }
   };
 
-  const handleDeleteUser = (id: number) => {
-    setUsers(users.filter((user) => user.id !== id));
+  const handleDeleteUser = (id: string) => {
+    setUsers(users.filter((user) => user.rut !== id));
   };
 
   return (
@@ -83,15 +106,19 @@ export default function ManejoUsuarios() {
             <TableHead>ID</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Rol</TableHead>
+            <TableHead>Área</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {getCurrentUsers().map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.id}</TableCell>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
+            <TableRow key={user.rut}>
+              <TableCell className="font-medium">{user.rut}</TableCell>
+              <TableCell>{user.nombre} {user.apellido_paterno} {user.apellido_materno}</TableCell>
+              <TableCell>{user.correo}</TableCell>
+              <TableCell>{user.rol}</TableCell>
+              <TableCell>{user.area}</TableCell>
               <TableCell>
                 <Dialog>
                   <DialogTrigger asChild>

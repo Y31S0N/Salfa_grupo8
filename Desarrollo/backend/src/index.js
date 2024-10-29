@@ -2,6 +2,7 @@ import express from 'express';
 import cors from "cors";
 import usuarioRoutes from './routes/usuario.routes.js';
 import cursoRoutes from './routes/curso.routes.js';
+import areaRoutes from './routes/area.routes.js';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 
 app.use(usuarioRoutes);
 app.use(cursoRoutes);
+app.use(areaRoutes);
 
 
 

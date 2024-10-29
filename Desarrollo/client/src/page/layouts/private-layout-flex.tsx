@@ -74,6 +74,11 @@ export default function PrivateLayout_flex() {
                 text="Gestion de usuarios"
               />
               <NavItem
+                to="/listarAreas"
+                icon={<Book size={20} />}
+                text="Áreas"
+              />
+              <NavItem
                 to="/login"
                 icon={<LogOut size={20} />}
                 text="Cerrar Sesión"

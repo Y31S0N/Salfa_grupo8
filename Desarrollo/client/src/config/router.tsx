@@ -21,6 +21,7 @@ import Agregar_modulos from "@/page/private/agregar_modulos";
 import Agregar_lecciones from "@/page/private/agregar_lecciones";
 import Agregar_contenido from "@/page/private/agregar_contenido";
 import Modificar_cursos from "@/page/private/modificar_curso";
+import ListadoAreas from '@/page/private/listar-areas';
 
 import { createBrowserRouter } from "react-router-dom";
 import DashboardRRHH from "@/page/private/dashboard-rh";
@@ -29,6 +30,7 @@ import Cursos_home from "@/page/private/cursos";
 import ListadoCursosUsuario from "@/page/private/listado-cursos-usuario";
 import ManejoUsuarios from "@/page/private/usuarios-admin";
 import PerfilUsuario from "@/page/private/perfil-usuario";
+import FormularioArea from "@/page/private/nueva-area";
 // import VistaCursosAdmin from "@/page/private/cursos-admin";
 
 export const router = createBrowserRouter([
@@ -216,6 +218,29 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <PerfilUsuario />,
+      },
+    ],
+  },
+// *************** ÁREAS ***************
+  {
+    path: "/formArea",
+    element: <PrivateLayout_flex />,
+    children: [
+      {
+        index: true,
+        element: <FormularioArea onCreate={function (): void {
+          throw new Error("Function not implemented.");
+        } } />,
+      },
+    ],
+  },
+  {
+    path: "/listarAreas",
+    element: <PrivateLayout_flex />,
+    children: [
+      {
+        index: true,
+        element: <ListadoAreas />,
       },
     ],
   },

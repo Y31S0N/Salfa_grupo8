@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -10,17 +10,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { Button } from '@/components/ui/button'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { PieChart, Pie, Cell, Legend } from "recharts";
-import { Users, BookOpen, CheckCircle, PercentIcon } from "lucide-react";
+import { Users, BookOpen, CheckCircle, PercentIcon, FileDown } from "lucide-react";
+// Exportación PDF
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
 
 // Datos de ejemplo
 const userData = {
@@ -53,25 +50,97 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
 export default function DashboardRRHH() {
   const [selectedDepartment, setSelectedDepartment] = useState("Todos");
+  const [areas, setAreas] = useState<any[]>([])
+
 
   const filteredUserData =
     selectedDepartment === "Todos"
       ? userData.byDepartment
       : userData.byDepartment.filter(
-          (dept) => dept.name === selectedDepartment
-        );
+        (dept) => dept.name === selectedDepartment
+      );
 
   const filteredCourseData =
     selectedDepartment === "Todos"
       ? courseData.byDepartment
       : courseData.byDepartment.filter(
-          (dept) => dept.name === selectedDepartment
-        );
+        (dept) => dept.name === selectedDepartment
+      );
+
+  // LLAMADO DE ÁREAS 
+
+  const cargarAreas = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/area')
+      if (!response.ok) {
+        throw new Error("HHTP error! status:");
+      }
+      const data = await response.json()
+      setAreas(data);
+    } catch (error) {
+      console.error('Error al cargar áreas:', error);
+    }
+  }
+  console.log(areas);
+  
+  const exportToPDF = () => {
+    const doc = new jsPDF()
+
+    // Título
+    doc.setFontSize(18)
+    doc.text('Informe de RRHH', 14, 22)
+
+    // Resumen de Usuarios
+    doc.setFontSize(14)
+    doc.text('Resumen de Usuarios', 14, 32)
+    autoTable(doc, {
+      startY: 38,
+      head: [['Total', 'Activos', 'Inactivos']],
+      body: [[userData.total, userData.active, userData.inactive]],
+    })
+
+    // Usuarios por Departamento
+    doc.setFontSize(14)
+    doc.text('Usuarios por Departamento', 14, 60)
+    autoTable(doc, {
+      startY: 66,
+      head: [['Departamento', 'Total', 'Activos']],
+      body: userData.byDepartment.map(dept => [dept.name, dept.total, dept.active]),
+    })
+
+    // Resumen de Cursos
+    doc.setFontSize(14)
+    doc.text('Resumen de Cursos', 14, 120)
+    autoTable(doc, {
+      startY: 126,
+      head: [['Total de Cursos', 'Cursos Completados', 'Tasa de Finalización']],
+      body: [[courseData.total, courseData.completed, `${courseData.completionRate}%`]],
+    })
+
+    // Cursos por Departamento
+    doc.setFontSize(14)
+    doc.text('Cursos por Departamento', 14, 150)
+    autoTable(doc, {
+      startY: 156,
+      head: [['Departamento', 'Completados', 'Total']],
+      body: courseData.byDepartment.map(dept => [dept.name, dept.completed, dept.total]),
+    })
+
+    doc.save('informe-rrhh.pdf')
+  }
+  useEffect(() =>{
+    cargarAreas();
+  }, [])
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">Dashboard de Recursos Humanos</h1>
-
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Dashboard para Recursos Humanos</h1>
+        <Button onClick={exportToPDF} variant="outline">
+          <FileDown className="mr-2 h-4 w-4" />
+          Exportar a PDF
+        </Button>
+      </div>
       <div className="mb-6">
         <Select onValueChange={setSelectedDepartment}>
           <SelectTrigger className="w-[180px]">
@@ -79,7 +148,7 @@ export default function DashboardRRHH() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Todos">Todos los departamentos</SelectItem>
-            {userData.byDepartment.map((dept) => (
+            {areas.map((dept) => (
               <SelectItem key={dept.name} value={dept.name}>
                 {dept.name}
               </SelectItem>

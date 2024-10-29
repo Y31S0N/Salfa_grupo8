@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 import capacitacion from "@/assets/capacitacion.png";
 import mantenimiento from "@/assets/mantenimiento.png";
 import seguridad from "@/assets/seguridad.png";
@@ -37,8 +38,55 @@ const Card: React.FC<CardProps> = ({ image, title, description, link }) => {
   );
 };
 
+interface Curso {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  activo: boolean;
+}
+
 // Componente principal
 export default function Listado_cursos() {
+
+  const location = useLocation()
+  const queryParams = new URLSearchParams(location.search);
+
+  const id_area = queryParams.get('area');
+
+
+
+
+  const [cursos, setCursos] = useState<Curso[]>([
+    {
+      id: 1,
+      nombre: "Equipos de Protección Personal (EPP)",
+      descripcion: "Veremos los equipos de protección personal y su uso diario dentro de la empresa.",
+      activo: true,
+    },
+    {
+      id: 2,
+      nombre: "Operador de Maquinaria Pesada Multifuncional",
+      descripcion: "Esta capacitación está diseñada para preparar a los participantes en el manejo seguro y eficiente de diversos tipos de maquinaria pesada, como excavadoras, cargadoras y grúas. A lo largo del programa, los participantes adquirirán habilidades prácticas en la operación de equipos, mantenimiento preventivo, y normas de seguridad industrial. También se abordarán técnicas de movimientos de tierra, carga y carga...",
+      activo: true,
+    },
+    {
+      id: 3,
+      nombre: "Capacitación Minera ewe",
+      descripcion: "Esta capacitación está diseñada para preparar a los participantes en el manejo seguro y eficiente de diversos tipos de maquinaria pesada, como excavadoras, cargadoras y grúas. A lo largo del programa, los participantes adquirirán habilidades prácticas en la operación de equipos, mantenimiento preventivo, y normas de seguridad industrial. También se abordarán técnicas de movimientos de tierra, carga y carga...",
+      activo: true,
+    },
+  ]);
+
+
+
+  if (id_area) {
+    const cursosFiltrados = id_area
+      ? cursos.filter(curso => curso.id === Number(id_area))
+      : cursos;
+  }
+
+
+
   const handleSearch = (query: string) => {
     console.log("Buscando:", query);
   };
@@ -87,7 +135,6 @@ export default function Listado_cursos() {
         />
       </div>
 
-      {/* Botón para agregar un nuevo curso */}
       <div className="flex justify-center mt-6">
         <Link to="/agregar_cursos">
           <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">

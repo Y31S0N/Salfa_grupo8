@@ -58,7 +58,7 @@ export const modificarCurso = async (req, res) => {
                 estado_curso
             }
         });
-        res.status(200).json({ message: "Curso Modificadio exitosamente" });
+        res.status(200).json({ message: "Curso Modificado exitosamente" });
     } catch (error) {
         console.error("Error al Modificar el curso:", error);
         res.status(500).json({ error: error.message });
