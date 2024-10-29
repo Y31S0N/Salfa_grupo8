@@ -1,11 +1,15 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../components/ui/avatar";
 // import { Badge } from "@/components/ui/badge";
 //import { Briefcase, GraduationCap, Mail, MapPin, Phone } from "lucide-react";
 import { Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 // import { PublishAlert, DisableAlert } from "../../components/ui/mensaje_alerta";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,14 +17,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "../../components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 // import { Progress } from "@/components/ui/progress";
 import { LayoutList, LayoutGrid } from "lucide-react";
 

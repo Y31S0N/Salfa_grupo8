@@ -2,26 +2,22 @@ import express from "express";
 import cors from "cors";
 import pkg from "pg";
 const { Pool } = pkg;
-import usuarioRoutes from "./routes/usuario.routes.js";
+import { dbConfig } from "./config/dbconfig.js";
+import cursoRouter from "./routes/curso.routes.js";
+import usuarioRouter from "./routes/usuario.routes.js";
+import moduloRouter from "./routes/modulo.routes.js";
+import leccionRouter from "./routes//leccionCurso.routes.js";
 
 const app = express();
 
 // Configuración de la conexión a la base de datos
-const pool = new Pool({
-  user: "nes",
-  host: "localhost", // o tu host de base de datos
-  database: "salfa_capacitaciones",
-  password: "negrata7531",
-  port: 5432, // el puerto por defecto de PostgreSQL
-});
+const pool = new Pool(dbConfig);
 
 // Middleware para hacer la conexión disponible en todas las rutas
 app.use((req, res, next) => {
   req.db = pool;
   next();
 });
-
-// ... resto del código existente ...
 
 app.use(
   cors({
@@ -32,7 +28,10 @@ app.use(
 );
 app.use(express.json());
 
-app.use(usuarioRoutes);
+app.use(usuarioRouter);
+app.use(cursoRouter);
+app.use(moduloRouter);
+app.use(leccionRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "../../components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "../../components/ui/dialog";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import N_usuario from "./nuevo-usuario";
 
@@ -29,7 +29,7 @@ interface User {
 }
 
 // Simular datos de usuarios
-const mockUsers: User[] = Array.from({ length: 50 }, (_, i) => ({
+const mockUsers: User[] = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
   name: `Usuario ${i + 1}`,
   email: `usuario${i + 1}@example.com`,
@@ -40,6 +40,7 @@ export default function ManejoUsuarios() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  const [usuarios, setUsuarios] = useState<any[]>([]);
   const usersPerPage = 10;
   const totalPages = Math.ceil(users.length / usersPerPage);
 
@@ -57,9 +58,27 @@ export default function ManejoUsuarios() {
     }
   };
 
+  const cargarUsuarios = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/usuario");
+      if (!response.ok) {
+        // setUsuarios(response.data);
+        console.log(response);
+        console.log("Ta bien");
+      }
+    } catch (error) {
+      console.error("Error => ", error);
+    }
+  };
+  // console.log();
+
   const handleDeleteUser = (id: number) => {
     setUsers(users.filter((user) => user.id !== id));
   };
+
+  useEffect(() => {
+    cargarUsuarios();
+  }, []);
 
   return (
     <div className="container mx-auto p-4">

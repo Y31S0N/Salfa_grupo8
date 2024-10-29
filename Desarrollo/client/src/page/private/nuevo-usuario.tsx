@@ -1,17 +1,17 @@
-import { useState } from "react";
-import RutInput from "@/components/rutinput";
+import React, { useState } from "react";
+import RutInput from "../../components/rutinput";
 import axios from "axios";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "../../components/ui/select";
 
 const N_usuario = () => {
   const [formData, setFormData] = useState({
@@ -61,7 +61,7 @@ const N_usuario = () => {
     }
     try {
       const response = await axios.post<VerificacionUsuarioResponse>(
-        "http://localhost:5000/api/verificarUsuario",
+        "http://localhost:3000/verificarUsuario",
         {
           rut,
           correo,

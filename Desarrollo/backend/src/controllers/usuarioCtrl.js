@@ -61,6 +61,25 @@ export const crearUsuario = async (req, res) => {
   }
 };
 
+export const obtenerUsuarios = async (req, res) => {
+  try {
+    const usuarios = await prisma.usuario.findMany({
+      include: {
+        rol: true,
+        Area: true,
+      },
+    });
+
+    res.status(200).json({
+      mensaje: "Usuarios obtenidos exitosamente",
+      usuarios: usuarios,
+    });
+  } catch (error) {
+    console.error("Error al obtener usuarios:", error);
+    res.status(500).json({ mensaje: "Error al obtener usuarios" });
+  }
+};
+
 export const verificarUsuario = async (req, res) => {
   const {
     rut,
@@ -171,25 +190,6 @@ export const verificarUsuario = async (req, res) => {
       mensaje: "No se pudo determinar la acción a realizar.",
       error: error.message,
     });
-  }
-};
-
-export const obtenerUsuarios = async (req, res) => {
-  try {
-    const usuarios = await prisma.usuario.findMany({
-      include: {
-        rol: true,
-        Area: true,
-      },
-    });
-
-    res.status(200).json({
-      mensaje: "Usuarios obtenidos exitosamente",
-      usuarios: usuarios,
-    });
-  } catch (error) {
-    console.error("Error al obtener usuarios:", error);
-    res.status(500).json({ mensaje: "Error al obtener usuarios" });
   }
 };
 

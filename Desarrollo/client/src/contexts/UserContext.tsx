@@ -1,5 +1,5 @@
 // UserContext.tsx
-import {
+import React, {
   createContext,
   useContext,
   useState,
@@ -53,7 +53,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           const idToken = await firebaseUser.getIdToken();
 
-          const response = await api.get<{ role: string }>("/api/user-info", {
+          const response = await api.get<{ role: string }>("/user-info", {
             headers: { Authorization: `Bearer ${idToken}` },
           });
 
