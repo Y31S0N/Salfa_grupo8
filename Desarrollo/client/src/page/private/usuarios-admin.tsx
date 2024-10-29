@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,14 +10,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "../../components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "../../components/ui/dialog";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import N_usuario from "./nuevo-usuario";
 
@@ -39,7 +40,6 @@ export default function ManejoUsuarios() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const usersPerPage = 10;
   const totalPages = Math.ceil(users.length / usersPerPage);
@@ -60,18 +60,17 @@ export default function ManejoUsuarios() {
 
   const cargarUsuarios = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/usuario');
+      const response = await fetch("http://localhost:3000/usuario");
       if (!response.ok) {
         // setUsuarios(response.data);
         console.log(response);
-        console.log('Ta bien');
+        console.log("Ta bien");
       }
     } catch (error) {
-      console.error('Error => ', error);
+      console.error("Error => ", error);
     }
-  }
+  };
   // console.log();
-
 
   const handleDeleteUser = (id: number) => {
     setUsers(users.filter((user) => user.id !== id));
@@ -79,7 +78,7 @@ export default function ManejoUsuarios() {
 
   useEffect(() => {
     cargarUsuarios();
-  }, [])
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
@@ -93,7 +92,12 @@ export default function ManejoUsuarios() {
           </Button>
         </DialogTrigger>
         <DialogContent>
-          <DialogHeader></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+            <DialogDescription>
+              Ingrese los detalles del nuevo usuario aquí.
+            </DialogDescription>
+          </DialogHeader>
           <N_usuario />
         </DialogContent>
       </Dialog>

@@ -1,9 +1,16 @@
+import React from "react";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate} from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "../../components/ui/card";
 import axios from "axios";
 import { Folder, ChevronDown, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../components/ui/button";
 
 type Curso = {
   id_curso: number;
@@ -29,7 +36,7 @@ type Leccion = {
 
 export default function Vercurso() {
   const { id } = useParams<{ id: string }>();
-  
+
   const navigate = useNavigate();
   const [curso, setCurso] = useState<Curso | null>(null);
   const [modulos, setModulos] = useState<Modulo[]>([]);
@@ -43,13 +50,19 @@ export default function Vercurso() {
       if (id) {
         setLoading(true);
         try {
-          const cursoResponse = await axios.get<Curso>(`http://localhost:5000/api/cursos/${id}`);
+          const cursoResponse = await axios.get<Curso>(
+            `http://localhost:3000/cursos/${id}`
+          );
           setCurso(cursoResponse.data);
 
-          const modulosResponse = await axios.get<Modulo[]>(`http://localhost:5000/api/cursos/${id}/modulos`);
+          const modulosResponse = await axios.get<Modulo[]>(
+            `http://localhost:3000/cursos/${id}/modulos`
+          );
           setModulos(modulosResponse.data);
         } catch (error) {
-          setError("Error al obtener el curso y los módulos. Por favor, intenta nuevamente.");
+          setError(
+            "Error al obtener el curso y los módulos. Por favor, intenta nuevamente."
+          );
           console.error("Error al obtener el curso y los módulos:", error);
         } finally {
           setLoading(false);
@@ -66,8 +79,13 @@ export default function Vercurso() {
     } else {
       setExpandedModulo(moduloId);
       try {
-        const leccionesResponse = await axios.get<Leccion[]>(`http://localhost:5000/api/modulos/${moduloId}/lecciones`);
-        setLecciones(prev => ({ ...prev, [moduloId]: leccionesResponse.data }));
+        const leccionesResponse = await axios.get<Leccion[]>(
+          `http://localhost:3000/modulos/${moduloId}/lecciones`
+        );
+        setLecciones((prev) => ({
+          ...prev,
+          [moduloId]: leccionesResponse.data,
+        }));
       } catch (error) {
         console.error("Error al obtener las lecciones:", error);
       }
@@ -95,15 +113,18 @@ export default function Vercurso() {
         </CardHeader>
         <CardContent>
           <p>
-            <strong>Fecha de creación:</strong> {new Date(curso.fecha_creacion).toLocaleDateString()}
+            <strong>Fecha de creación:</strong>{" "}
+            {new Date(curso.fecha_creacion).toLocaleDateString()}
           </p>
           {curso.fecha_limite && (
             <p>
-              <strong>Fecha límite:</strong> {new Date(curso.fecha_limite).toLocaleDateString()}
+              <strong>Fecha límite:</strong>{" "}
+              {new Date(curso.fecha_limite).toLocaleDateString()}
             </p>
           )}
           <p>
-            <strong>Estado:</strong> {curso.estado_curso ? "Habilitado" : "Deshabilitado"}
+            <strong>Estado:</strong>{" "}
+            {curso.estado_curso ? "Habilitado" : "Deshabilitado"}
           </p>
         </CardContent>
       </Card>
@@ -117,10 +138,15 @@ export default function Vercurso() {
             <div className="space-y-2">
               {modulos.map((modulo) => (
                 <div key={modulo.id_modulo}>
-                  <div className="flex items-center justify-between cursor-pointer" onClick={() => handleModuloClick(modulo.id_modulo)}>
+                  <div
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={() => handleModuloClick(modulo.id_modulo)}
+                  >
                     <div className="flex items-center">
                       <Folder className="mr-2" size={18} />
-                      <strong className="flex-1 truncate break-all text-ellipsis">{modulo.nombre_modulo}</strong>
+                      <strong className="flex-1 truncate break-all text-ellipsis">
+                        {modulo.nombre_modulo}
+                      </strong>
                     </div>
                     <div className="flex items-center">
                       {expandedModulo === modulo.id_modulo ? (
@@ -130,7 +156,11 @@ export default function Vercurso() {
                       )}
                       <Button
                         className="bg-yellow-500 text-white hover:bg-yellow-600 ml-4 text-xs px-2"
-                        onClick={() => navigate(`/cursos/${id}/modulos/${modulo.id_modulo}/modificar`)}
+                        onClick={() =>
+                          navigate(
+                            `/cursos/${id}/modulos/${modulo.id_modulo}/modificar`
+                          )
+                        }
                       >
                         Modificar
                       </Button>
@@ -138,30 +168,43 @@ export default function Vercurso() {
                   </div>
 
                   {/* Mostrar lecciones si el módulo está expandido */}
-                  {expandedModulo === modulo.id_modulo && lecciones[modulo.id_modulo] && (
-                    <div className="ml-4 mt-2 pl-4 border-l-2 border-gray-300">
-                      {lecciones[modulo.id_modulo].map((leccion) => (
-                        <div key={leccion.id_leccion} className="flex items-center justify-between">
-                          <span className="mr-2 truncate">• {leccion.nombre_leccion}</span>
-                          <Button
-                            className="bg-yellow-500 text-white hover:bg-yellow-600 text-xs px-1 mb-2"
-                            onClick={() => navigate(`/cursos/${id}/modulos/${modulo.id_modulo}/modificar_lecciones/${leccion.id_leccion}`)} // Incluye leccion.id_leccion
+                  {expandedModulo === modulo.id_modulo &&
+                    lecciones[modulo.id_modulo] && (
+                      <div className="ml-4 mt-2 pl-4 border-l-2 border-gray-300">
+                        {lecciones[modulo.id_modulo].map((leccion) => (
+                          <div
+                            key={leccion.id_leccion}
+                            className="flex items-center justify-between"
                           >
-                            Modificar
+                            <span className="mr-2 truncate">
+                              • {leccion.nombre_leccion}
+                            </span>
+                            <Button
+                              className="bg-yellow-500 text-white hover:bg-yellow-600 text-xs px-1 mb-2"
+                              onClick={() =>
+                                navigate(
+                                  `/cursos/${id}/modulos/${modulo.id_modulo}/modificar_lecciones/${leccion.id_leccion}`
+                                )
+                              } // Incluye leccion.id_leccion
+                            >
+                              Modificar
+                            </Button>
+                          </div>
+                        ))}
+                        <div className="mt-2">
+                          <Button
+                            className="bg-green-500 text-white hover:bg-green-600 text-xs px-1 py-1"
+                            onClick={() =>
+                              navigate(
+                                `/cursos/${id}/modulos/${modulo.id_modulo}/agregar_lecciones`
+                              )
+                            }
+                          >
+                            Agregar lección
                           </Button>
-
                         </div>
-                      ))}
-                      <div className="mt-2">
-                        <Button
-                          className="bg-green-500 text-white hover:bg-green-600 text-xs px-1 py-1"
-                          onClick={() => navigate(`/cursos/${id}/modulos/${modulo.id_modulo}/agregar_lecciones`)}
-                        >
-                          Agregar lección
-                        </Button>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               ))}
             </div>

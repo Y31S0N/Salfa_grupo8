@@ -1,5 +1,6 @@
+import React from "react";
 import About from "../../page/public/about";
-import capacitacion from "../../assets/capacitacion.png";
+import capacitacion from "@/assets/capacitacion.png";
 
 export default function About_layout() {
   const aboutProps = {
