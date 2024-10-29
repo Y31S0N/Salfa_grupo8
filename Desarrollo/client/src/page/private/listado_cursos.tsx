@@ -26,10 +26,21 @@ interface CardProps {
 }
 
 // Componente de la carta
-const Card: React.FC<CardProps> = ({ image, title, description, link, id_curso, estado_curso, fecha_vencimiento, onToggle }) => {
+const Card: React.FC<CardProps> = ({
+  image,
+  title,
+  description,
+  link,
+  id_curso,
+  estado_curso,
+  fecha_vencimiento,
+  onToggle,
+}) => {
   const handleToggle = () => {
     Swal.fire({
-      title: `¿Estás seguro de ${estado_curso ? 'deshabilitar' : 'habilitar'} este curso?`,
+      title: `¿Estás seguro de ${
+        estado_curso ? "deshabilitar" : "habilitar"
+      } este curso?`,
       text: "Este cambio afectará la disponibilidad del curso para los usuarios.",
       icon: "warning",
       showCancelButton: true,
@@ -40,22 +51,27 @@ const Card: React.FC<CardProps> = ({ image, title, description, link, id_curso, 
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await axios.put<Curso>(`http://localhost:5000/api/cursos/${id_curso}`, {
-            estado_curso: !estado_curso
-          });
+          const response = await axios.put<Curso>(
+            `http://localhost:3000/cursos/${id_curso}`,
+            {
+              estado_curso: !estado_curso,
+            }
+          );
           onToggle(response.data);
 
           Swal.fire(
-            estado_curso ? 'Deshabilitado' : 'Habilitado',
-            `El curso ha sido ${estado_curso ? 'deshabilitado' : 'habilitado'} correctamente.`,
-            'success'
+            estado_curso ? "Deshabilitado" : "Habilitado",
+            `El curso ha sido ${
+              estado_curso ? "deshabilitado" : "habilitado"
+            } correctamente.`,
+            "success"
           );
         } catch (error) {
           console.error("Error al cambiar el estado del curso:", error);
           Swal.fire(
-            'Error',
-            'Hubo un problema al intentar cambiar el estado del curso.',
-            'error'
+            "Error",
+            "Hubo un problema al intentar cambiar el estado del curso.",
+            "error"
           );
         }
       }
@@ -74,7 +90,10 @@ const Card: React.FC<CardProps> = ({ image, title, description, link, id_curso, 
         {/* Verificar si la fecha de vencimiento es válida */}
         {fecha_vencimiento && fecha_vencimiento !== null ? (
           <p className="text-sm font-bold text-gray-800 bg-yellow-100 border border-red-500 p-2 mb-4 rounded">
-            Este curso dejará de estar disponible el: {new Date(fecha_vencimiento).toLocaleDateString("es-ES", { timeZone: "UTC" })}
+            Este curso dejará de estar disponible el:{" "}
+            {new Date(fecha_vencimiento).toLocaleDateString("es-ES", {
+              timeZone: "UTC",
+            })}
           </p>
         ) : (
           <p className="text-sm font-bold text-gray-600 bg-green-100 border border-green-500 p-2 mb-4 rounded">
@@ -91,23 +110,25 @@ const Card: React.FC<CardProps> = ({ image, title, description, link, id_curso, 
           </Link>
           <button
             onClick={handleToggle}
-            className={`bg-${estado_curso ? 'red' : 'green'}-500 text-white px-3 py-1 rounded hover:bg-${estado_curso ? 'red' : 'green'}-600 text-sm`}
+            className={`bg-${
+              estado_curso ? "red" : "green"
+            }-500 text-white px-3 py-1 rounded hover:bg-${
+              estado_curso ? "red" : "green"
+            }-600 text-sm`}
           >
-            {estado_curso ? 'Deshabilitar' : 'Habilitar'}
+            {estado_curso ? "Deshabilitar" : "Habilitar"}
           </button>
         </div>
       </div>
-
-
-
-
     </div>
   );
 };
 
 export default function Listado_cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
-  const [filter, setFilter] = useState<'todos' | 'habilitados' | 'deshabilitados'>('habilitados');
+  const [filter, setFilter] = useState<
+    "todos" | "habilitados" | "deshabilitados"
+  >("habilitados");
 
   const handleSearch = (query: string) => {
     console.log("Buscando:", query);
@@ -115,7 +136,7 @@ export default function Listado_cursos() {
 
   const fetchCursos = async () => {
     try {
-      const response = await axios.get<Curso[]>("http://localhost:5000/api/cursos");
+      const response = await axios.get<Curso[]>("http://localhost:3000/cursos");
       setCursos(response.data);
     } catch (error) {
       console.error("Error al obtener los cursos:", error);
@@ -127,22 +148,24 @@ export default function Listado_cursos() {
   }, []);
 
   const handleToggleCurso = (updatedCurso: Curso) => {
-    setCursos(prevCursos =>
-      prevCursos.map(curso =>
+    setCursos((prevCursos) =>
+      prevCursos.map((curso) =>
         curso.id_curso === updatedCurso.id_curso ? updatedCurso : curso
       )
     );
   };
 
-  const filteredCursos = cursos.filter(curso => {
-    if (filter === 'habilitados') return curso.estado_curso;
-    if (filter === 'deshabilitados') return !curso.estado_curso;
+  const filteredCursos = cursos.filter((curso) => {
+    if (filter === "habilitados") return curso.estado_curso;
+    if (filter === "deshabilitados") return !curso.estado_curso;
     return true;
   });
 
   return (
     <>
-      <h2 className="text-2xl font-bold mb-4 text-center">Cursos disponibles</h2>
+      <h2 className="text-2xl font-bold mb-4 text-center">
+        Cursos disponibles
+      </h2>
       <SearchBar onSearch={handleSearch} setFilter={setFilter} />
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 justify-items-center">
         {filteredCursos.map((curso) => (

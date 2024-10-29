@@ -1,5 +1,5 @@
 // ModificarModulo.tsx
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -15,9 +15,15 @@ interface Curso {
 }
 
 const Modificar_modulo = () => {
-  const { cursoId, moduloId } = useParams<{ cursoId: string; moduloId: string }>();
+  const { cursoId, moduloId } = useParams<{
+    cursoId: string;
+    moduloId: string;
+  }>();
   const navigate = useNavigate();
-  const [modulo, setModulo] = useState<Modulo>({ nombre_modulo: "", descripcion_modulo: "" });
+  const [modulo, setModulo] = useState<Modulo>({
+    nombre_modulo: "",
+    descripcion_modulo: "",
+  });
   const [curso, setCurso] = useState<Curso | null>(null); // Estado para almacenar la información del curso
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true); // Para manejar el estado de carga
@@ -26,8 +32,10 @@ const Modificar_modulo = () => {
     const obtenerDatos = async () => {
       try {
         const [moduloResponse, cursoResponse] = await Promise.all([
-          axios.get<Modulo>(`http://localhost:5000/api/cursos/${cursoId}/modulos/${moduloId}`),
-          axios.get<Curso>(`http://localhost:5000/api/cursos/${cursoId}`),
+          axios.get<Modulo>(
+            `http://localhost:3000/cursos/${cursoId}/modulos/${moduloId}`
+          ),
+          axios.get<Curso>(`http://localhost:3000/cursos/${cursoId}`),
         ]);
 
         setModulo(moduloResponse.data); // Ahora TypeScript conoce el tipo de response.data
@@ -48,7 +56,9 @@ const Modificar_modulo = () => {
     obtenerDatos();
   }, [cursoId, moduloId]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setModulo((prev) => ({ ...prev, [name]: value }));
   };
@@ -56,14 +66,22 @@ const Modificar_modulo = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/api/cursos/${cursoId}/modulos/${moduloId}`, modulo);
+      await axios.put(
+        `http://localhost:3000/cursos/${cursoId}/modulos/${moduloId}`,
+        modulo
+      );
       navigate(`/vercurso/${cursoId}`); // Redirige de vuelta a la vista del curso en vercurso
     } catch (error) {
       // Manejo de error sin usar isAxiosError
       if (error instanceof Error) {
-        setError(error.message || "Error al modificar el módulo. Asegúrate de que todos los campos sean válidos.");
+        setError(
+          error.message ||
+            "Error al modificar el módulo. Asegúrate de que todos los campos sean válidos."
+        );
       } else {
-        setError("Error al modificar el módulo. Asegúrate de que todos los campos sean válidos.");
+        setError(
+          "Error al modificar el módulo. Asegúrate de que todos los campos sean válidos."
+        );
       }
       console.error(error);
     }
@@ -80,14 +98,24 @@ const Modificar_modulo = () => {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4 text-center">Modificar Módulo</h2>
-        {curso && <p className="text-lg text-center mb-4">Curso: {curso.nombre_curso}</p>} {/* Mostrar el nombre del curso */}
-        {error && <p className="text-red-500 text-center">{error}</p>} {/* Estilo de error */}
-
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Modificar Módulo
+        </h2>
+        {curso && (
+          <p className="text-lg text-center mb-4">
+            Curso: {curso.nombre_curso}
+          </p>
+        )}{" "}
+        {/* Mostrar el nombre del curso */}
+        {error && <p className="text-red-500 text-center">{error}</p>}{" "}
+        {/* Estilo de error */}
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Nombre del módulo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="moduloNombre">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="moduloNombre"
+            >
               Nombre del Módulo
             </label>
             <input
@@ -103,7 +131,10 @@ const Modificar_modulo = () => {
 
           {/* Descripción del módulo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="moduloDescripcion">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="moduloDescripcion"
+            >
               Descripción del Módulo
             </label>
             <textarea
@@ -119,10 +150,17 @@ const Modificar_modulo = () => {
 
           {/* Botones de volver y guardar */}
           <div className="flex justify-center space-x-2">
-            <button type="button" onClick={handleBack} className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+            >
               Volver
             </button>
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
               Guardar Cambios
             </button>
           </div>

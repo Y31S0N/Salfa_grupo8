@@ -1,7 +1,6 @@
 import { auth } from "../../firebase/firebaseAdminConfig.js";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
-import auth from "../../firebaseAdminConfig.js";
 
 import {
   JWT_SECRET,
@@ -62,22 +61,22 @@ export const crearUsuario = async (req, res) => {
   }
 };
 
-export const listarUsuarios = async (req, res) => {
+export const obtenerUsuarios = async (req, res) => {
   try {
-    const usuarios = [];
-    let nextPageToken;
+    const usuarios = await prisma.usuario.findMany({
+      include: {
+        rol: true,
+        Area: true,
+      },
+    });
 
-    // try {
-    //     const usuarios = await prisma.usuario.findMany();
-    //     res.json(usuarios);
-    // } catch(err) {
-    //     console.log(err);
-    // };
-
-    res.status(200).json(usuarios);
+    res.status(200).json({
+      mensaje: "Usuarios obtenidos exitosamente",
+      usuarios: usuarios,
+    });
   } catch (error) {
-    console.error("Error al listar todos los usuarios:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Error al obtener usuarios:", error);
+    res.status(500).json({ mensaje: "Error al obtener usuarios" });
   }
 };
 
@@ -191,25 +190,6 @@ export const verificarUsuario = async (req, res) => {
       mensaje: "No se pudo determinar la acción a realizar.",
       error: error.message,
     });
-  }
-};
-
-export const obtenerUsuarios = async (req, res) => {
-  try {
-    const usuarios = await prisma.usuario.findMany({
-      include: {
-        rol: true,
-        Area: true,
-      },
-    });
-
-    res.status(200).json({
-      mensaje: "Usuarios obtenidos exitosamente",
-      usuarios: usuarios,
-    });
-  } catch (error) {
-    console.error("Error al obtener usuarios:", error);
-    res.status(500).json({ mensaje: "Error al obtener usuarios" });
   }
 };
 

@@ -23,13 +23,17 @@ const Modificar_curso = () => {
   useEffect(() => {
     const fetchCurso = async () => {
       try {
-        const response = await axios.get<Curso>(`http://localhost:5000/api/cursos/${id}`);
+        const response = await axios.get<Curso>(
+          `http://localhost:3000/cursos/${id}`
+        );
         const curso = response.data;
 
         // Cargar los datos del curso en los estados
         setNombreCurso(curso.nombre_curso);
         setDescripcionCurso(curso.descripcion_curso);
-        setFechaLimite(curso.fecha_limite ? curso.fecha_limite.split('T')[0] : "");
+        setFechaLimite(
+          curso.fecha_limite ? curso.fecha_limite.split("T")[0] : ""
+        );
       } catch (error) {
         setError("Error al obtener el curso. Por favor, intenta nuevamente.");
         console.error("Error al obtener el curso:", error);
@@ -51,8 +55,11 @@ const Modificar_curso = () => {
 
     try {
       setLoading(true); // Iniciar carga
-      const response = await axios.put(`http://localhost:5000/api/cursos/${id}`, cursoModificado);
-      
+      const response = await axios.put(
+        `http://localhost:3000/cursos/${id}`,
+        cursoModificado
+      );
+
       if (response.status === 200) {
         console.log("Curso modificado:", response.data);
         navigate("/listado_cursos"); // Redirigir a la lista de cursos
@@ -71,11 +78,15 @@ const Modificar_curso = () => {
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <h2 className="text-2xl font-bold mb-4 text-center">Modificar Curso</h2>
-        {error && <p className="text-red-500 text-center">{error}</p>} {/* Mensaje de error */}
+        {error && <p className="text-red-500 text-center">{error}</p>}{" "}
+        {/* Mensaje de error */}
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Nombre del curso */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cursoNombre">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="cursoNombre"
+            >
               Nombre del Curso
             </label>
             <input
@@ -91,7 +102,10 @@ const Modificar_curso = () => {
 
           {/* Descripción del curso */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cursoDescripcion">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="cursoDescripcion"
+            >
               Descripción del Curso
             </label>
             <textarea
@@ -107,7 +121,10 @@ const Modificar_curso = () => {
 
           {/* Fecha límite */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="fechaLimite">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="fechaLimite"
+            >
               Fecha Límite (opcional)
             </label>
             <input
@@ -122,12 +139,21 @@ const Modificar_curso = () => {
           {/* Botones de volver y modificar */}
           <div className="flex justify-center space-x-2">
             <Link to="/listado_cursos">
-              <button type="button" className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
+              <button
+                type="button"
+                className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+              >
                 Volver
               </button>
             </Link>
-            <button type="submit" className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={loading}>
-              {loading ? 'Modificando...' : 'Modificar Curso'}
+            <button
+              type="submit"
+              className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={loading}
+            >
+              {loading ? "Modificando..." : "Modificar Curso"}
             </button>
           </div>
         </form>

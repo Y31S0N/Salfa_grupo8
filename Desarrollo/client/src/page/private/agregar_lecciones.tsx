@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -9,12 +9,16 @@ interface Leccion {
 }
 
 const AgregarLeccion = () => {
-  const [leccion, setLeccion] = useState<Leccion>({ nombre_leccion: "", descripcion_leccion: "" });
+  const [leccion, setLeccion] = useState<Leccion>({
+    nombre_leccion: "",
+    descripcion_leccion: "",
+  });
   const navigate = useNavigate();
   const { cursoId, moduloId } = useParams(); // Captura el moduloId y cursoId
 
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setLeccion((prev) => ({ ...prev, [name]: value }));
   };
@@ -24,7 +28,7 @@ const AgregarLeccion = () => {
 
     try {
       const response = await axios.post<{ id: number }>(
-        `http://localhost:5000/api/modulos/${moduloId}/lecciones`,
+        `http://localhost:3000/modulos/${moduloId}/lecciones`,
         leccion
       );
 
@@ -42,18 +46,23 @@ const AgregarLeccion = () => {
 
   const handleBack = () => {
     // Redirige al curso al que pertenece el módulo
-    console.log("Desde Agregar lecciones => ",cursoId);
-    
+    console.log("Desde Agregar lecciones => ", cursoId);
+
     navigate(`/vercurso/${cursoId}`);
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4 text-center">Crear Nueva Lección</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Crear Nueva Lección
+        </h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="leccionNombre">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="leccionNombre"
+            >
               Nombre de la Lección
             </label>
             <input
@@ -69,7 +78,10 @@ const AgregarLeccion = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="leccionDescripcion">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="leccionDescripcion"
+            >
               Descripción de la Lección
             </label>
             <textarea
@@ -88,12 +100,14 @@ const AgregarLeccion = () => {
             <button
               type="button"
               onClick={handleBack}
-              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
+              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+            >
               Volver
             </button>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
               Crear Lección
             </button>
           </div>

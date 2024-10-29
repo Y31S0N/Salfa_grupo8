@@ -1,3 +1,4 @@
+import React from "react";
 import { useState } from "react";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +32,7 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg">
         <h3 className="text-2xl font-bold text-center text-gray-800">
-          Inicio de sesión
+          Iniciar sesión
         </h3>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         <form onSubmit={handleSubmit} className="login-form">
@@ -41,11 +42,11 @@ const Login = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="email"
               >
-                Correo electrónico
+                Email
               </label>
               <input
                 type="email"
-                placeholder="Ingresa tu correo"
+                placeholder="Enter your Email"
                 required
                 className="w-full px-4 py-2 mt-2 border rounded-md
               focus:outline-none focus:ring-1 focus:ring-blue-600"
@@ -58,11 +59,11 @@ const Login = () => {
                 className="block text-sm font-medium text-gray-700"
                 htmlFor="password"
               >
-                Contraseña
+                Password
               </label>
               <input
                 type="password"
-                placeholder="Ingresa tu contraseña"
+                placeholder="Enter your password"
                 required
                 className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
                 value={password}
@@ -74,10 +75,10 @@ const Login = () => {
                 type="submit"
                 className="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
               >
-                Iniciar sesión
+                Login
               </button>
-              <a href="#" className="text-sm px-4 text-blue-600 hover:underline">
-                Olvidó su contraseña?
+              <a href="#" className="text-sm text-blue-600 hover:underline">
+                Forgot password?
               </a>
             </div>
           </div>

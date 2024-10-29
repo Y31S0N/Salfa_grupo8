@@ -22,7 +22,10 @@ const agregar_cursos = () => {
 
     try {
       // Realizar solicitud POST a la API
-      const response = await axios.post("http://localhost:5000/api/cursos", nuevoCurso);
+      const response = await axios.post(
+        "http://localhost:3000/cursos",
+        nuevoCurso
+      );
       console.log("Curso creado:", response.data);
 
       // Redirigir al listado de cursos
@@ -35,11 +38,16 @@ const agregar_cursos = () => {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h2 className="text-2xl font-bold mb-4 text-center">Crear Nuevo Curso</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Crear Nuevo Curso
+        </h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Nombre del curso */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cursoNombre">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="cursoNombre"
+            >
               Nombre del Curso
             </label>
             <input
@@ -55,7 +63,10 @@ const agregar_cursos = () => {
 
           {/* Descripción del curso */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="cursoDescripcion">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="cursoDescripcion"
+            >
               Descripción del Curso
             </label>
             <textarea
@@ -71,7 +82,10 @@ const agregar_cursos = () => {
 
           {/* Fecha límite */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="fechaLimite">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="fechaLimite"
+            >
               Fecha Límite (opcional)
             </label>
             <input
@@ -86,11 +100,17 @@ const agregar_cursos = () => {
           {/* Botones de volver y crear */}
           <div className="flex justify-center space-x-2">
             <Link to="/listado_cursos">
-              <button type="button" className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
+              <button
+                type="button"
+                className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+              >
                 Volver
               </button>
             </Link>
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
               Crear Curso
             </button>
           </div>

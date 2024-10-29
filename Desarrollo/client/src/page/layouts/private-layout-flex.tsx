@@ -1,7 +1,8 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { Book, Home, LogOut, User, Activity, UserCog } from "lucide-react";
-import Header from "@/components/header";
-import NavItem from "@/components/nav-home";
+import Header from "../../components/header";
+import NavItem from "../../components/nav-home";
 import { Outlet } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
