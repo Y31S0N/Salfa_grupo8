@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,57 +10,37 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "../../components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "../../components/ui/dialog";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import N_usuario from "./nuevo-usuario";
 
-interface Usuario {
-  rut: string;
-  nombre: string;
-  apellido_paterno: string;
-  apellido_materno: string;
-  correo: string;
-  contrasena: string;
-  rol: string;
-  area: string;
+interface User {
+  id: number;
+  name: string;
+  email: string;
 }
 
 // Simular datos de usuarios
-const usuarios: Usuario[] = [{
-  rut: "217652343",
-  nombre: "Carlos", apellido_paterno: "Alcayaga", apellido_materno: "Araneda",
-  correo: "ca.alcayaga@salfamantenciones.cl", contrasena: "calcayaga2176",
-  rol: "1",
-  area: "2",
-},
-{
-  rut: "22345876",
-  nombre: "José", apellido_paterno: "Irving", apellido_materno: "Correa",
-  correo: "cualquiera@salfamantenciones", contrasena: "jose22",
-  rol: "3",
-  area: "2",
-},
-{
-  rut: "19345476",
-  nombre: "Josefa", apellido_paterno: "Aliaga", apellido_materno: "Flores",
-  correo: "jo.aliaga@salfamantenciones.cl", contrasena: "josefa19",
-  rol: "3",
-  area: "1",
-}
-];
+const mockUsers: User[] = Array.from({ length: 12 }, (_, i) => ({
+  id: i + 1,
+  name: `Usuario ${i + 1}`,
+  email: `usuario${i + 1}@example.com`,
+}));
 
 export default function ManejoUsuarios() {
-  const [users, setUsers] = useState<Usuario[]>(usuarios);
+  const [users, setUsers] = useState<User[]>(mockUsers);
   const [currentPage, setCurrentPage] = useState(1);
-  const [editingUser, setEditingUser] = useState(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  const [usuarios, setUsuarios] = useState<any[]>([]);
   const usersPerPage = 10;
   const totalPages = Math.ceil(users.length / usersPerPage);
 
@@ -71,17 +51,34 @@ export default function ManejoUsuarios() {
 
   const handleUpdateUser = () => {
     if (editingUser) {
-      const { rut } = editingUser;
       setUsers(
-        users.map((user) => (user.rut === rut ? editingUser : user))
+        users.map((user) => (user.id === editingUser.id ? editingUser : user))
       );
       setEditingUser(null);
     }
   };
 
-  const handleDeleteUser = (id: string) => {
-    setUsers(users.filter((user) => user.rut !== id));
+  const cargarUsuarios = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/usuario");
+      if (!response.ok) {
+        // setUsuarios(response.data);
+        console.log(response);
+        console.log("Ta bien");
+      }
+    } catch (error) {
+      console.error("Error => ", error);
+    }
   };
+  // console.log();
+
+  const handleDeleteUser = (id: number) => {
+    setUsers(users.filter((user) => user.id !== id));
+  };
+
+  useEffect(() => {
+    cargarUsuarios();
+  }, []);
 
   return (
     <div className="container mx-auto p-4">
@@ -95,7 +92,12 @@ export default function ManejoUsuarios() {
           </Button>
         </DialogTrigger>
         <DialogContent>
-          <DialogHeader></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+            <DialogDescription>
+              Ingrese los detalles del nuevo usuario aquí.
+            </DialogDescription>
+          </DialogHeader>
           <N_usuario />
         </DialogContent>
       </Dialog>
@@ -106,19 +108,15 @@ export default function ManejoUsuarios() {
             <TableHead>ID</TableHead>
             <TableHead>Nombre</TableHead>
             <TableHead>Email</TableHead>
-            <TableHead>Rol</TableHead>
-            <TableHead>Área</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {getCurrentUsers().map((user) => (
-            <TableRow key={user.rut}>
-              <TableCell className="font-medium">{user.rut}</TableCell>
-              <TableCell>{user.nombre} {user.apellido_paterno} {user.apellido_materno}</TableCell>
-              <TableCell>{user.correo}</TableCell>
-              <TableCell>{user.rol}</TableCell>
-              <TableCell>{user.area}</TableCell>
+            <TableRow key={user.id}>
+              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.name}</TableCell>
+              <TableCell>{user.email}</TableCell>
               <TableCell>
                 <Dialog>
                   <DialogTrigger asChild>

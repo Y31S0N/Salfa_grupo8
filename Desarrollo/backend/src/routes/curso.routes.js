@@ -1,26 +1,25 @@
-import { Router } from 'express';
+import { Router } from "express";
 
 import {
-    eliminarCurso,
-    listarCurso,
-    modificarCurso,
-    listarCursos,
-    crearCurso
-} from '../controllers/cursoCtrl.js';
+  crearcursos,
+  obtenerCursos,
+  obtenerCurso,
+  deleteCurso,
+  editCurso,
+} from "../controllers/cursoCtrl.js";
 
 const router = Router();
+//GET
+router.get("/cursos", obtenerCursos);
+router.get("/cursos/:id", obtenerCurso);
 
-// GET
-router.get('/api/curso/:id', listarCurso)
-router.get('/api/curso/', listarCursos)
+//POST
+router.post("/cursos", crearcursos);
 
-// POST
-router.post('/api/curso/', crearCurso)
+//PUT
+router.put("/cursos/:id", editCurso);
 
-// PUT
-router.put('/api/curso/:id', modificarCurso)
-
-// DELETE
-router.delete('/api/curso/:id', eliminarCurso)
+//DELETE
+router.delete("/cursos/:id", deleteCurso);
 
 export default router;
