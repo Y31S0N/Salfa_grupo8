@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import usuarioRoutes from './routes/usuario.routes.js';
+import cursoRoutes from './routes/curso.routes.js';
+import areaRoutes from './routes/area.routes.js';
 import pkg from "pg";
 const { Pool } = pkg;
 import { dbConfig } from "./config/dbconfig.js";
@@ -27,6 +30,11 @@ app.use(
   })
 );
 app.use(express.json());
+
+app.use(usuarioRoutes);
+app.use(cursoRoutes);
+app.use(areaRoutes);
+
 
 app.use(usuarioRouter);
 app.use(cursoRouter);
