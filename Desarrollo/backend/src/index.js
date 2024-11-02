@@ -1,8 +1,5 @@
 import express from "express";
 import cors from "cors";
-import usuarioRoutes from './routes/usuario.routes.js';
-import cursoRoutes from './routes/curso.routes.js';
-import areaRoutes from './routes/area.routes.js';
 import pkg from "pg";
 const { Pool } = pkg;
 import { dbConfig } from "./config/dbconfig.js";
@@ -10,6 +7,7 @@ import cursoRouter from "./routes/curso.routes.js";
 import usuarioRouter from "./routes/usuario.routes.js";
 import moduloRouter from "./routes/modulo.routes.js";
 import leccionRouter from "./routes//leccionCurso.routes.js";
+import areaRouter from "./routes/area.routes.js";
 
 const app = express();
 
@@ -31,15 +29,11 @@ app.use(
 );
 app.use(express.json());
 
-app.use(usuarioRoutes);
-app.use(cursoRoutes);
-app.use(areaRoutes);
-
-
 app.use(usuarioRouter);
 app.use(cursoRouter);
 app.use(moduloRouter);
 app.use(leccionRouter);
+app.use(areaRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
