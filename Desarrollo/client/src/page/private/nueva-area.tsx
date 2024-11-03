@@ -1,11 +1,10 @@
-'use client'
-
+import React from 'react';
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
+import { Input } from "../../components/ui/input"
+import { Label } from "../../components/ui/label"
+import { Button } from "../../components/ui/button"
 
 
 interface FormularioAreaProps {
@@ -39,7 +38,7 @@ const FormularioArea: React.FC<FormularioAreaProps> = ({ onCreate }) => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/area', {
+      const response = await fetch('http://localhost:3000/api/area', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,30 +60,32 @@ const FormularioArea: React.FC<FormularioAreaProps> = ({ onCreate }) => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Formulario de Área</CardTitle>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="nombre_area">Nombre del área</Label>
-              <Input
-                type="text"
-                placeholder="Ingresa el nombre del área"
-                name='nombre_area'
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full">Crear</Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+    <>
+      <div className="container mx-auto p-4">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Formulario de Área</CardTitle>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="nombre_area">Nombre del área</Label>
+                <Input
+                  type="text"
+                  placeholder="Ingresa el nombre del área"
+                  name='nombre_area'
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full">Crear</Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    </>
   )
 }
 

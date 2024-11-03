@@ -1,24 +1,26 @@
-'use client'
+import React from 'react';
 
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Toaster, toast } from 'sonner';
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "../../components/ui/input"
+import { Button } from "../../components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card"
 import { PlusCircle, Search } from 'lucide-react'
 
 import { useEffect } from "react";
-import { DialogHeader, Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/components/ui/dialog'
+import { DialogHeader, Dialog, DialogContent, DialogTrigger, DialogTitle } from '../../components/ui/dialog'
 import FormularioArea from './nueva-area'
 
 import { useNavigate } from 'react-router-dom';
+import FormularioModArea from './modificar-area';
 
 
 export default function ListadoAreas() {
-    const [open, setOpen] = useState(false);
+    const [openCreate, setOpenCreate] = useState(false);
+    const [openModify, setOpenModify] = useState(false);
     const [busqueda, setBusqueda] = useState('')
     const [areas, setAreas] = useState<any[]>([])
+    const [isLoading, setLoading] = useState(true);
 
     const navigate = useNavigate();
 
@@ -26,26 +28,35 @@ export default function ListadoAreas() {
         navigate(`/listado_cursos?area=${userId}`);
     }
 
+    const handleFormModificar = async (id_area: string) => {
+        setOpenModify(true);
+        await cargarAreas();
+        toast("Área Modificada con Éxito")
+    }
     const cargarAreas = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/area/')
+            const response = await fetch('http://localhost:3000/api/area/')
+
             if (!response.ok) {
                 throw new Error("HHTP error! status:");
             }
-            const data = await response.json()
+            let data = await response.json()
+            data.sort((a, b) => a.nombre_area.localeCompare(b.nombre_area))
             setAreas(data);
         } catch (error) {
             console.error('Error al cargar áreas:', error);
         }
     }
+
     const handleCreateArea = () => {
-        setOpen(false);
+        setOpenCreate(false);
         cargarAreas();
     };
 
     const areasFiltradas = areas.filter(area =>
         area.nombre_area.toLowerCase().includes(busqueda.toLowerCase())
     )
+
     useEffect(() => {
         cargarAreas();
     }, []);
@@ -69,10 +80,9 @@ export default function ListadoAreas() {
                 </Button>
             </div>
 
-
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={openCreate} onOpenChange={setOpenCreate}>
                 <DialogTrigger asChild>
-                    <Button className="mb-4" onClick={() => setOpen(true)}>
+                    <Button className="mb-4" onClick={() => setOpenCreate(true)}>
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Crear área
                     </Button>
@@ -85,8 +95,6 @@ export default function ListadoAreas() {
                 </DialogContent>
             </Dialog>
 
-
-
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {areasFiltradas.map((area) => (
                     <Card key={area.id_area}>
@@ -94,12 +102,24 @@ export default function ListadoAreas() {
                             <CardTitle>{area.nombre_area}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-600 mb-4">{area.descripcion}</p>
-                            {/* <Link> */}
                             <Button onClick={() => handleVerUsuarios(area.id_area)} variant="outline" className="w-full">
                                 Ver Usuarios
                             </Button>
-                            {/* </Link> */}
+
+                            <Button onClick={() => setOpenModify(area.id_area)} variant="outline" className="w-full my-1">
+                                Modificar Área
+                            </Button>
+
+                            <Dialog open={openModify === area.id_area} onOpenChange={(open) => setOpenModify(open ? area.id_area : null)}>
+                                <DialogTrigger asChild>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Modificar Área</DialogTitle>
+                                    </DialogHeader>
+                                    <FormularioModArea onCreate={() => handleFormModificar(area.id_area)} id_area={area.id_area} />
+                                </DialogContent>
+                            </Dialog>
                         </CardContent>
                     </Card>
                 ))}

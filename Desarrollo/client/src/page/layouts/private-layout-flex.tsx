@@ -104,6 +104,12 @@ export default function PrivateLayout_flex() {
             icon={<Activity size={20} />}
             text="Actividad vista trabajador"
           />,
+          <NavItem
+            key="area-worker"
+            to="/listarAreas"
+            icon={<Activity size={20} />}
+            text="Áreas vista trabajador"
+          />,
         ];
         break;
       case "Usuario":
