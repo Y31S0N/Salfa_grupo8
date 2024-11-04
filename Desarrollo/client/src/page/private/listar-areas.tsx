@@ -18,17 +18,17 @@ import FormularioModArea from './modificar-area';
 export default function ListadoAreas() {
     const [openCreate, setOpenCreate] = useState(false);
     const [openModify, setOpenModify] = useState(false);
-    const [busqueda, setBusqueda] = useState('')
-    const [areas, setAreas] = useState<any[]>([])
+    const [busqueda, setBusqueda] = useState('');
+    const [areas, setAreas] = useState<any[]>([]);
     const [isLoading, setLoading] = useState(true);
 
     const navigate = useNavigate();
 
-    const handleVerUsuarios = (userId: string): void => {
-        navigate(`/listado_cursos?area=${userId}`);
+    const handleVerUsuarios = (id_area: string): void => {
+        navigate(`/listarUsuarios?id_area=${id_area}`);
     }
 
-    const handleFormModificar = async (id_area: string) => {
+    const handleFormModificar = async () => {
         setOpenModify(true);
         await cargarAreas();
         toast("Área Modificada con Éxito")
@@ -117,7 +117,7 @@ export default function ListadoAreas() {
                                     <DialogHeader>
                                         <DialogTitle>Modificar Área</DialogTitle>
                                     </DialogHeader>
-                                    <FormularioModArea onCreate={() => handleFormModificar(area.id_area)} id_area={area.id_area} />
+                                    <FormularioModArea onCreate={() => handleFormModificar()} id_area={area.id_area} />
                                 </DialogContent>
                             </Dialog>
                         </CardContent>

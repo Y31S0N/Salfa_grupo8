@@ -1,15 +1,11 @@
 import React from 'react';
-
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../components/ui/card"
 import { Input } from "../../components/ui/input"
 import { Label } from "../../components/ui/label"
 import { Button } from "../../components/ui/button"
-// import { Textarea } from "../../components/ui/textarea"
-// import { toast } from "../../components/ui/use-toast"
 
-// Assume this interface is defined based on your backend model
 interface Area {
   id: string;
   nombre_area: string;
@@ -28,7 +24,6 @@ const FormularioModArea: React.FC<FormularioFormProps> = ({ id_area, onCreate })
     const fetchArea = async () => {
       setIsLoading(true)
       try {
-        // Replace with your actual API endpoint
         const response = await fetch(`http://localhost:3000/api/area/${id_area}`)
         if (!response.ok) throw new Error('Failed to fetch area')
         const data = await response.json()
@@ -49,7 +44,6 @@ const FormularioModArea: React.FC<FormularioFormProps> = ({ id_area, onCreate })
     e.preventDefault()
     setIsLoading(true)
     try {
-      // Replace with your actual API endpoint
       const response = await fetch(`http://localhost:3000/api/area/${id_area}`, {
         method: 'PUT',
         headers: {
@@ -60,8 +54,7 @@ const FormularioModArea: React.FC<FormularioFormProps> = ({ id_area, onCreate })
 
       if (!response.ok) throw new Error('Failed to update area')
 
-        const data = await response.json();
-      toast("El área ha sido actualizada correctamente")
+      const data = await response.json();
       setAreas(prevAreas => [...prevAreas, data])
     } catch (error) {
       console.error('Error updating area:', error)
@@ -90,7 +83,6 @@ const FormularioModArea: React.FC<FormularioFormProps> = ({ id_area, onCreate })
                 name="nombre"
                 value={area.nombre_area}
                 onChange={(e) => setArea({ ...area, nombre_area: e.target.value })}
-                // onChange={handleInputChange}
                 required
               />
             </div>
@@ -105,5 +97,4 @@ const FormularioModArea: React.FC<FormularioFormProps> = ({ id_area, onCreate })
     </div>
   )
 }
-
 export default FormularioModArea;

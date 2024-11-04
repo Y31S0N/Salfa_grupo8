@@ -13,7 +13,7 @@ import { verifyToken } from "../middleware/authMiddleware.js";
 const router = Router();
 // GET //usamos verifyToken para proteger los endpoint
 router.get("/user-info", verifyToken, getUserInfo);
-router.get("/api/usuarios/", verifyToken, obtenerUsuarios);
+router.get("/api/usuarios/", obtenerUsuarios);
 
 // POST
 router.post("/verificarusuario", verifyToken, verificarUsuario);

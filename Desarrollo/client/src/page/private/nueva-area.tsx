@@ -13,11 +13,9 @@ interface FormularioAreaProps {
 
 const FormularioArea: React.FC<FormularioAreaProps> = ({ onCreate }) => {
 
-
   const [formData, setFormData] = useState({
     nombre_area: ""
   })
-
   const [areas, setAreas] = useState<any[]>([]);
 
   const handleInputChange = (e: React.FormEvent<HTMLInputElement>) => {
