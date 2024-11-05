@@ -63,12 +63,24 @@ export const crearUsuario = async (req, res) => {
 
 export const obtenerUsuarios = async (req, res) => {
   try {
-    const usuarios = await prisma.usuario.findMany({
-      include: {
-        rol: true,
-        Area: true,
-      },
-    });
+    const { id_area } = req.query;
+    let usuarios;
+    if (id_area) {
+      usuarios = await prisma.usuario.findMany({
+        where: { areaId: Number(id_area) },
+        include: {
+          rol: true,
+          Area: true,
+        },
+      });
+    } else {
+      usuarios = await prisma.usuario.findMany({
+        include: {
+          rol: true,
+          Area: true,
+        }
+      });
+    }
 
     res.status(200).json({
       mensaje: "Usuarios obtenidos exitosamente",

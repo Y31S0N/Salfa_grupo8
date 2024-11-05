@@ -46,7 +46,6 @@ export default function About_layout() {
           </svg>
         ),
       },
-      // Añade más características según sea necesario
     ],
     imageSrc: capacitacion,
     imageAlt: "Descripción de la imagen",

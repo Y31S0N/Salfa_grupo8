@@ -90,7 +90,7 @@ export default function PrivateLayout_flex() {
             key="activity-worker"
             to="/dashboard-rh"
             icon={<Activity size={20} />}
-            text="Actividad vista trabajador"
+            text="Actividad vista trabajador 1"
           />,
           <NavItem
             key="courses-admin"
@@ -102,7 +102,19 @@ export default function PrivateLayout_flex() {
             key="activity-admin"
             to="/dashboard-rh"
             icon={<Activity size={20} />}
-            text="Actividad vista trabajador"
+            text="Actividad vista trabajador 2"
+          />,
+          <NavItem
+            key="area-worker"
+            to="/listarAreas"
+            icon={<Activity size={20} />}
+            text="Áreas vista trabajador"
+          />,
+          <NavItem
+            key="user-worker"
+            to="/listarUsuarios"
+            icon={<Activity size={20} />}
+            text="Usuarios vista trabajador"
           />,
         ];
         break;
