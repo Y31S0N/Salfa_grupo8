@@ -1,3 +1,4 @@
+import React from "react";
 import capacitaciones from "@/assets/capacitacion.png";
 import mantenimiento from "@/assets/mantenimiento.png";
 import seguridad from "@/assets/seguridad.png";

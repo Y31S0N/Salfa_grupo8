@@ -1,23 +1,22 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useSigninCheck } from "reactfire";
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { useUser } from "../../contexts/UserContext";
+import { Navigate } from "react-router-dom";
 
-const RootLayout = () => {
-  const { status, data: singInCheckResult } = useSigninCheck();
+export default function RootLayout() {
+  const { loading, user } = useUser();
 
-  if (status === "loading") {
-    return <div>Loading...</div>;
+  if (loading) {
+    return <div>Cargando...</div>; // O un componente de carga más elaborado
   }
 
-  if (singInCheckResult.signedIn == true) {
-    return <Navigate to="/home" />;
+  if (user) {
+    return <Navigate to="/home" replace />;
   }
 
   return (
-    <div>
-      <main>
-        <Outlet />
-      </main>
+    <div className="min-h-screen bg-gray-100 flex flex-col justify-center">
+      <Outlet />
     </div>
   );
-};
-export default RootLayout;
+}

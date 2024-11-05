@@ -1,384 +1,165 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-// Definición de las interfaces
-interface Contenido {
-  archivo: File | null;
-  url: string;
-  tipoArchivo: "video" | "documento" | "imagen";
-}
-
-interface Leccion {
-  id: number;
-  nombre: string;
-  contenidos: Contenido[];
-  habilitado: boolean; // Nueva propiedad para habilitar/deshabilitar
-}
-
-interface Modulo {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  lecciones: Leccion[];
-  habilitado: boolean; // Nueva propiedad para habilitar/deshabilitar
-}
-
+// Definir la interfaz para los cursos
 interface Curso {
-  nombre: string;
-  descripcion: string;
-  fechaLimite: string;
-  modulos: Modulo[];
+  id_curso: number;
+  nombre_curso: string;
+  descripcion_curso: string;
+  fecha_limite: string | null;
 }
 
-// Simulación de los datos existentes
-const cursoData: Curso = {
-  nombre: "Curso de Capacitación Minera",
-  descripcion: "Este es un curso sobre prácticas de seguridad minera.",
-  fechaLimite: "2024-12-31",
-  modulos: [
-    {
-      id: 1,
-      nombre: "Módulo 1: Introducción",
-      descripcion: "Introducción al curso y conceptos básicos.",
-      lecciones: [
-        {
-          id: 1,
-          nombre: "Lección 1",
-          contenidos: [{ archivo: null, url: "", tipoArchivo: "video" }],
-          habilitado: true,
-        },
-        {
-          id: 2,
-          nombre: "Lección 2",
-          contenidos: [
-            {
-              archivo: null,
-              url: "https://example.com",
-              tipoArchivo: "documento",
-            },
-          ],
-          habilitado: true,
-        },
-      ],
-      habilitado: true,
-    },
-    {
-      id: 2,
-      nombre: "Módulo 2: Técnicas Avanzadas",
-      descripcion: "Técnicas avanzadas de operación.",
-      lecciones: [
-        {
-          id: 1,
-          nombre: "Lección 1",
-          contenidos: [{ archivo: null, url: "", tipoArchivo: "imagen" }],
-          habilitado: true,
-        },
-      ],
-      habilitado: true,
-    },
-  ],
-};
+const Modificar_curso = () => {
+  const { id } = useParams<{ id: string }>(); // Obtener el ID del curso desde la URL
+  const [nombreCurso, setNombreCurso] = useState("");
+  const [descripcionCurso, setDescripcionCurso] = useState("");
+  const [fechaLimite, setFechaLimite] = useState<string>("");
+  const [error, setError] = useState<string | null>(null); // Para manejar errores
+  const [loading, setLoading] = useState<boolean>(false); // Estado de carga
+  const navigate = useNavigate(); // Para redirigir después de modificar el curso
 
-const Modificar_cursos = () => {
-  const [curso, setCurso] = useState<Curso>(cursoData);
-  const [modulos, setModulos] = useState<Modulo[]>(cursoData.modulos);
+  // Función para obtener los detalles del curso al cargar el componente
+  useEffect(() => {
+    const fetchCurso = async () => {
+      try {
+        const response = await axios.get<Curso>(
+          `http://localhost:3000/cursos/${id}`
+        );
+        const curso = response.data;
 
-  const handleCursoChange = (
-    field: "nombre" | "descripcion" | "fechaLimite",
-    value: string
-  ) => {
-    setCurso({ ...curso, [field]: value });
-  };
+        // Cargar los datos del curso en los estados
+        setNombreCurso(curso.nombre_curso);
+        setDescripcionCurso(curso.descripcion_curso);
+        setFechaLimite(
+          curso.fecha_limite ? curso.fecha_limite.split("T")[0] : ""
+        );
+      } catch (error) {
+        setError("Error al obtener el curso. Por favor, intenta nuevamente.");
+        console.error("Error al obtener el curso:", error);
+      }
+    };
 
-  const handleModuloChange = (
-    moduloIndex: number,
-    field: "nombre" | "descripcion",
-    value: string
-  ) => {
-    const nuevosModulos = [...modulos];
-    nuevosModulos[moduloIndex][field] = value;
-    setModulos(nuevosModulos);
-  };
+    fetchCurso(); // Llama a la función al montar el componente
+  }, [id]);
 
-  const handleLeccionChange = (
-    moduloIndex: number,
-    leccionIndex: number,
-    field: "nombre",
-    value: string
-  ) => {
-    const nuevosModulos = [...modulos];
-    nuevosModulos[moduloIndex].lecciones[leccionIndex][field] = value;
-    setModulos(nuevosModulos);
-  };
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  const handleContenidoChange = (
-    moduloIndex: number,
-    leccionIndex: number,
-    contenidoIndex: number,
-    field: keyof Contenido,
-    value: string | File | null
-  ) => {
-    const nuevosModulos = [...modulos];
+    const cursoModificado = {
+      nombre_curso: nombreCurso,
+      descripcion_curso: descripcionCurso,
+      fecha_limite: fechaLimite ? new Date(fechaLimite).toISOString() : null,
+    };
 
-    if (field === "archivo") {
-      nuevosModulos[moduloIndex].lecciones[leccionIndex].contenidos[
-        contenidoIndex
-      ].archivo = value as File | null;
-    } else if (field === "url") {
-      nuevosModulos[moduloIndex].lecciones[leccionIndex].contenidos[
-        contenidoIndex
-      ].url = value as string;
-    } else if (field === "tipoArchivo") {
-      nuevosModulos[moduloIndex].lecciones[leccionIndex].contenidos[
-        contenidoIndex
-      ].tipoArchivo = value as "video" | "documento" | "imagen";
+    try {
+      setLoading(true); // Iniciar carga
+      const response = await axios.put(
+        `http://localhost:3000/cursos/${id}`,
+        cursoModificado
+      );
+
+      if (response.status === 200) {
+        console.log("Curso modificado:", response.data);
+        navigate("/listado_cursos"); // Redirigir a la lista de cursos
+      } else {
+        setError("No se pudo modificar el curso. Intenta nuevamente.");
+      }
+    } catch (error) {
+      // Manejo más detallado de errores
+      console.error("Error al modificar el curso:", error);
+    } finally {
+      setLoading(false); // Terminar carga
     }
-
-    setModulos(nuevosModulos);
-  };
-
-  // Maneja la habilitación/deshabilitación de un módulo
-  const toggleModuloHabilitado = (moduloIndex: number) => {
-    const nuevosModulos = [...modulos];
-    nuevosModulos[moduloIndex].habilitado =
-      !nuevosModulos[moduloIndex].habilitado;
-    setModulos(nuevosModulos);
-  };
-
-  // Maneja la habilitación/deshabilitación de una lección
-  const toggleLeccionHabilitada = (
-    moduloIndex: number,
-    leccionIndex: number
-  ) => {
-    const nuevosModulos = [...modulos];
-    nuevosModulos[moduloIndex].lecciones[leccionIndex].habilitado =
-      !nuevosModulos[moduloIndex].lecciones[leccionIndex].habilitado;
-    setModulos(nuevosModulos);
   };
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
-        <h2 className="text-2xl font-bold mb-4 text-center">Editar Curso</h2>
-
-        {/* Información general del curso */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre del Curso
-          </label>
-          <input
-            type="text"
-            value={curso.nombre}
-            onChange={(e) => handleCursoChange("nombre", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Descripción del Curso
-          </label>
-          <textarea
-            value={curso.descripcion}
-            onChange={(e) => handleCursoChange("descripcion", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha Límite (opcional)
-          </label>
-          <input
-            type="date"
-            value={curso.fechaLimite}
-            onChange={(e) => handleCursoChange("fechaLimite", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Listado de módulos y lecciones */}
-        {modulos.map((modulo, moduloIndex) => (
-          <div key={modulo.id} className="mb-6 border-b pb-4">
-            <h3 className="text-xl font-bold mb-2">Módulo {moduloIndex + 1}</h3>
-
-            {/* Nombre del módulo */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre del Módulo
-              </label>
-              <input
-                type="text"
-                value={modulo.nombre}
-                onChange={(e) =>
-                  handleModuloChange(moduloIndex, "nombre", e.target.value)
-                }
-                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Descripción del módulo */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Descripción del Módulo
-              </label>
-              <textarea
-                value={modulo.descripcion}
-                onChange={(e) =>
-                  handleModuloChange(moduloIndex, "descripcion", e.target.value)
-                }
-                className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {/* Botón para habilitar/deshabilitar módulo */}
-            <button
-              onClick={() => toggleModuloHabilitado(moduloIndex)}
-              className={`bg-${
-                modulo.habilitado ? "red" : "green"
-              }-500 text-white rounded-lg py-2 px-4 mb-4`}
+      <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <h2 className="text-2xl font-bold mb-4 text-center">Modificar Curso</h2>
+        {error && <p className="text-red-500 text-center">{error}</p>}{" "}
+        {/* Mensaje de error */}
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          {/* Nombre del curso */}
+          <div>
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="cursoNombre"
             >
-              {modulo.habilitado ? "Deshabilitar Módulo" : "Habilitar Módulo"}
-            </button>
-
-            {/* Lecciones del módulo */}
-            {modulo.lecciones.map((leccion, leccionIndex) => (
-              <div key={leccion.id} className="mb-4">
-                <h4 className="font-semibold">Lección {leccionIndex + 1}</h4>
-
-                {/* Nombre de la lección */}
-                <div className="mb-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre de la Lección
-                  </label>
-                  <input
-                    type="text"
-                    value={leccion.nombre}
-                    onChange={(e) =>
-                      handleLeccionChange(
-                        moduloIndex,
-                        leccionIndex,
-                        "nombre",
-                        e.target.value
-                      )
-                    }
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                {/* Botón para habilitar/deshabilitar lección */}
-                <button
-                  onClick={() =>
-                    toggleLeccionHabilitada(moduloIndex, leccionIndex)
-                  }
-                  className={`bg-${
-                    leccion.habilitado ? "red" : "green"
-                  }-500 text-white rounded-lg py-1 px-3`}
-                >
-                  {leccion.habilitado
-                    ? "Deshabilitar lección"
-                    : "Habilitar Lección"}
-                </button>
-
-                {/* Contenidos de la lección */}
-                {leccion.contenidos.map((contenido, contenidoIndex) => (
-                  <div
-                    key={contenidoIndex}
-                    className="mt-2 p-2 border border-gray-300 rounded-lg"
-                  >
-                    <h5 className="font-medium">
-                      Contenido {contenidoIndex + 1}
-                    </h5>
-
-                    {/* Archivo */}
-                    <div className="mb-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Archivo
-                      </label>
-                      <input
-                        type="file"
-                        onChange={(e) =>
-                          handleContenidoChange(
-                            moduloIndex,
-                            leccionIndex,
-                            contenidoIndex,
-                            "archivo",
-                            e.target.files?.[0] || null
-                          )
-                        }
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* URL */}
-                    <div className="mb-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        URL
-                      </label>
-                      <input
-                        type="text"
-                        value={contenido.url}
-                        onChange={(e) =>
-                          handleContenidoChange(
-                            moduloIndex,
-                            leccionIndex,
-                            contenidoIndex,
-                            "url",
-                            e.target.value
-                          )
-                        }
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-
-                    {/* Tipo de archivo */}
-                    <div className="mb-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tipo de Archivo
-                      </label>
-                      <select
-                        value={contenido.tipoArchivo}
-                        onChange={(e) =>
-                          handleContenidoChange(
-                            moduloIndex,
-                            leccionIndex,
-                            contenidoIndex,
-                            "tipoArchivo",
-                            e.target.value as "video" | "documento" | "imagen"
-                          )
-                        }
-                        className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="video">Video</option>
-                        <option value="documento">Documento</option>
-                        <option value="imagen">Imagen</option>
-                      </select>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
+              Nombre del Curso
+            </label>
+            <input
+              type="text"
+              id="cursoNombre"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Ej. Capacitación Minera"
+              value={nombreCurso}
+              onChange={(e) => setNombreCurso(e.target.value)} // Actualiza el estado
+              required
+            />
           </div>
-        ))}
 
-        {/* Botones de acción */}
-        <div className="flex justify-between mt-6">
-          <Link
-            to="/listado_cursos"
-            className="bg-gray-500 text-white rounded-lg py-2 px-4"
-          >
-            Volver
-          </Link>
-          <Link
-            to="/listado_cursos"
-            className="bg-blue-500 text-white rounded-lg py-2 px-4"
-          >
-            Guardar Cambios
-          </Link>
-        </div>
+          {/* Descripción del curso */}
+          <div>
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="cursoDescripcion"
+            >
+              Descripción del Curso
+            </label>
+            <textarea
+              id="cursoDescripcion"
+              rows={4}
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Descripción del curso aquí..."
+              value={descripcionCurso}
+              onChange={(e) => setDescripcionCurso(e.target.value)} // Actualiza el estado
+              required
+            />
+          </div>
+
+          {/* Fecha límite */}
+          <div>
+            <label
+              className="block text-sm font-medium text-gray-700 mb-1"
+              htmlFor="fechaLimite"
+            >
+              Fecha Límite (opcional)
+            </label>
+            <input
+              type="date"
+              id="fechaLimite"
+              className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={fechaLimite}
+              onChange={(e) => setFechaLimite(e.target.value)} // Actualiza el estado
+            />
+          </div>
+
+          {/* Botones de volver y modificar */}
+          <div className="flex justify-center space-x-2">
+            <Link to="/listado_cursos">
+              <button
+                type="button"
+                className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
+              >
+                Volver
+              </button>
+            </Link>
+            <button
+              type="submit"
+              className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${
+                loading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={loading}
+            >
+              {loading ? "Modificando..." : "Modificar Curso"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default Modificar_cursos;
+export default Modificar_curso;
