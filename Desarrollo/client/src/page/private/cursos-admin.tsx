@@ -26,20 +26,40 @@ interface Curso {
 }
 
 export default function VistaCursosAdmin() {
+  const queryParams = new URLSearchParams(window.location.search);
+  const area_id = queryParams.get('id_area');
+  console.log(area_id);
+  
+  
   const [cursos, setCursos] = useState<Curso[]>([
     {
       id: 1,
-      nombre: "React Básico",
-      descripcion: "Introducción a React",
+      nombre: "Equipos de Protección Personal (EPP)",
+      descripcion: "Veremos los equipos de protección personal y su uso diario dentro de la empresa.",
       activo: true,
     },
     {
       id: 2,
-      nombre: "Node.js Avanzado",
-      descripcion: "Conceptos avanzados de Node.js",
+      nombre: "Operador de Maquinaria Pesada Multifuncional",
+      descripcion: "Esta capacitación está diseñada para preparar a los participantes en el manejo seguro y eficiente de diversos tipos de maquinaria pesada, como excavadoras, cargadoras y grúas. A lo largo del programa, los participantes adquirirán habilidades prácticas en la operación de equipos, mantenimiento preventivo, y normas de seguridad industrial. También se abordarán técnicas de movimientos de tierra, carga y carga...",
+      activo: true,
+    },
+    {
+      id: 3,
+      nombre: "Capacitación Minera ewe",
+      descripcion: "Esta capacitación está diseñada para preparar a los participantes en el manejo seguro y eficiente de diversos tipos de maquinaria pesada, como excavadoras, cargadoras y grúas. A lo largo del programa, los participantes adquirirán habilidades prácticas en la operación de equipos, mantenimiento preventivo, y normas de seguridad industrial. También se abordarán técnicas de movimientos de tierra, carga y carga...",
       activo: true,
     },
   ]);
+
+  if(area_id){
+    const cursosFiltrados = area_id
+    ? cursos.filter(curso => curso.id === Number(area_id))
+    :cursos;
+    console.log(area_id);
+  }
+  
+
   const [cursoEditando, setCursoEditando] = useState<Curso | null>(null);
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
 

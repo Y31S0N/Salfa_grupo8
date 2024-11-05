@@ -30,6 +30,9 @@ import PerfilUsuario from "../page/private/perfil-usuario";
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { UserProvider, useUser } from "../contexts/UserContext";
+import FormularioArea from "../page/private/nueva-area";
+import ListadoAreas from "../page/private/listar-areas";
+import ListadoUsuarios from "../page/private/listarUsuarios";
 
 // Definimos un tipo para los roles permitidos
 type UserRole = "Administrador" | "Trabajador" | "Usuario";
@@ -127,6 +130,10 @@ export const router = createBrowserRouter([
       },
       // USUARIOS
       {
+        path: "listarUsuarios",
+        element: <ListadoUsuarios/>,
+      },
+      {
         path: "nuevo_usuario",
         element: <N_usuario />,
       },
@@ -154,7 +161,24 @@ export const router = createBrowserRouter([
         path: "perfilUsuario",
         element: <PerfilUsuario />,
       },
+      {
+        path: "/formArea",
+        element: <FormularioArea onCreate={function (): void {
+          throw new Error("Function not implemented.");
+        }} />,
+      },
+      // ÁREAS
+      {
+        path: "/listarAreas",
+        element: <ListadoAreas />,
+      },
+      {
+        path: "/modificar_area",
+        element: <ListadoAreas />,
+      },
     ],
+
+
   },
   //publicos
   {
