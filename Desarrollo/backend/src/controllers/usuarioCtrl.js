@@ -65,9 +65,12 @@ export const obtenerUsuarios = async (req, res) => {
   try {
     const { id_area } = req.query;
     let usuarios;
+
     if (id_area) {
       usuarios = await prisma.usuario.findMany({
-        where: { areaId: Number(id_area) },
+        where: {
+          areaId: parseInt(id_area),
+        },
         include: {
           rol: true,
           Area: true,
@@ -78,17 +81,39 @@ export const obtenerUsuarios = async (req, res) => {
         include: {
           rol: true,
           Area: true,
-        }
+        },
       });
     }
 
-    res.status(200).json({
-      mensaje: "Usuarios obtenidos exitosamente",
-      usuarios: usuarios,
-    });
+    // Obtener el estado de Firebase para cada usuario
+    const usuariosConEstado = await Promise.all(
+      usuarios.map(async (usuario) => {
+        try {
+          const userRecord = await auth.getUserByEmail(usuario.correo);
+          return {
+            ...usuario,
+            estadoFirebase: !userRecord.disabled,
+          };
+        } catch (error) {
+          console.error(
+            `Error al obtener estado de Firebase para ${usuario.correo}:`,
+            error
+          );
+          return {
+            ...usuario,
+            estadoFirebase: true, // valor por defecto si hay error
+          };
+        }
+      })
+    );
+
+    res.json({ usuarios: usuariosConEstado });
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
-    res.status(500).json({ mensaje: "Error al obtener usuarios" });
+    res.status(500).json({
+      mensaje: "Error al obtener usuarios",
+      error: error.message,
+    });
   }
 };
 
@@ -327,9 +352,42 @@ export const getUserInfo = async (req, res) => {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    res.json({ role: usuario.rol.nombre_rol });
+    res.json({
+      role: usuario.rol.nombre_rol,
+      status: usuario.status,
+      nombre_usuario: usuario.nombre,
+    });
   } catch (error) {
     console.error("Error al obtener información del usuario:", error);
     res.status(500).json({ mensaje: "Error interno del servidor" });
+  }
+};
+
+export const toggleEstadoUsuario = async (req, res) => {
+  const { correo, estado } = req.body;
+
+  try {
+    // Obtener usuario de Firebase
+    const userRecord = await auth.getUserByEmail(correo);
+
+    // Actualizar estado en Firebase
+    // Si estado es true, queremos que el usuario esté habilitado (disabled: false)
+    // Si estado es false, queremos que el usuario esté deshabilitado (disabled: true)
+    await auth.updateUser(userRecord.uid, {
+      disabled: estado, // Cambiamos esto, ya no necesitamos invertir el estado
+    });
+
+    const usuarioActualizado = await auth.getUserByEmail(correo);
+
+    res.status(200).json({
+      mensaje: `Usuario ${estado ? "inhabilitado" : "habilitado"} exitosamente`,
+      estadoFirebase: !estado,
+    });
+  } catch (error) {
+    console.error("Error al actualizar estado del usuario:", error);
+    res.status(500).json({
+      mensaje: "Error al actualizar estado del usuario",
+      error: error.message,
+    });
   }
 };

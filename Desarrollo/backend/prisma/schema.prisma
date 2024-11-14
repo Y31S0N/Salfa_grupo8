@@ -50,8 +50,9 @@ model LeccionCurso {
 
 model Contenido {
   id_contenido                   Int                              @id @default(autoincrement())
-  archivo                        String
-  url                            String?
+  nombre_archivo                 String
+  indice_archivo                 Int
+  url                            String
   tipo_contenido                 String
   leccionId                      Int
   leccion                        LeccionCurso                     @relation(fields: [leccionId], references: [id_leccion])
@@ -66,7 +67,6 @@ model Usuario {
   correo                         String                           @unique
   rolId                          Int
   areaId                         Int?
-  refreshToken                   String? // Nuevo campo para almacenar el refresh token
   rol                            Rol                              @relation(fields: [rolId], references: [id_rol])
   Area                           Area?                            @relation(fields: [areaId], references: [id_area])
   encuestasAsignadas             EncuestaAsignada[]

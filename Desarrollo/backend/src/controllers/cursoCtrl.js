@@ -8,6 +8,7 @@ export const crearcursos = async (req, res) => {
       data: req.body,
       include: { modulos: true },
     });
+    console.log(newCurso);
     res.status(201).json(newCurso); // Código 201 para recurso creado
   } catch (error) {
     console.error("Error al crear curso:", error);

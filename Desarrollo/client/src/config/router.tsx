@@ -1,6 +1,7 @@
 //Layouts
 //Privada
 import PrivateLayout_flex from "../page/layouts/private-layout-flex";
+import PrivateLayout_content from "../page/layouts/private-layout-content";
 //Publica
 import RootLayout from "../page/layouts/root-layout";
 //About
@@ -26,6 +27,7 @@ import Cursos_home from "../page/private/cursos";
 import ListadoCursosUsuario from "../page/private/listado-cursos-usuario";
 import ManejoUsuarios from "../page/private/usuarios-admin";
 import PerfilUsuario from "../page/private/perfil-usuario";
+import SubirContenido from "../page/private/subircontenido";
 
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
@@ -33,6 +35,7 @@ import { UserProvider, useUser } from "../contexts/UserContext";
 import FormularioArea from "../page/private/nueva-area";
 import ListadoAreas from "../page/private/listar-areas";
 import ListadoUsuarios from "../page/private/listarUsuarios";
+import PaginaCurso from "../page/private/ver_contenido";
 
 // Definimos un tipo para los roles permitidos
 type UserRole = "Administrador" | "Trabajador" | "Usuario";
@@ -71,6 +74,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
+        index: true,
         path: "home",
         element: (
           <ProtectedRoute
@@ -131,7 +135,7 @@ export const router = createBrowserRouter([
       // USUARIOS
       {
         path: "listarUsuarios",
-        element: <ListadoUsuarios/>,
+        element: <ListadoUsuarios />,
       },
       {
         path: "nuevo_usuario",
@@ -150,6 +154,10 @@ export const router = createBrowserRouter([
         element: <Perfiladm />,
       },
       {
+        path: "subir_contenido",
+        element: <SubirContenido onClose={() => {}} onSuccess={() => {}} />,
+      },
+      {
         path: "dashboard-rh",
         element: <DashboardRRHH />,
       },
@@ -163,9 +171,13 @@ export const router = createBrowserRouter([
       },
       {
         path: "/formArea",
-        element: <FormularioArea onCreate={function (): void {
-          throw new Error("Function not implemented.");
-        }} />,
+        element: (
+          <FormularioArea
+            onCreate={function (): void {
+              throw new Error("Function not implemented.");
+            }}
+          />
+        ),
       },
       // ÁREAS
       {
@@ -177,8 +189,6 @@ export const router = createBrowserRouter([
         element: <ListadoAreas />,
       },
     ],
-
-
   },
   //publicos
   {
@@ -190,6 +200,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
+        index: true,
         path: "/login",
         element: <Login />,
       },
@@ -197,11 +208,21 @@ export const router = createBrowserRouter([
         path: "*",
         element: <NotFound />,
       },
-      {
-        path: "/about",
-        element: <About_layout />,
-      },
     ],
+  },
+  {
+    path: "ver_contenido/:cursoId/:moduloId/:leccionId",
+    element: (
+      <UserProvider>
+        <PrivateLayout_content>
+          <PaginaCurso />
+        </PrivateLayout_content>
+      </UserProvider>
+    ),
+  },
+  {
+    path: "/about",
+    element: <About_layout />,
   },
 
   // CURSOS

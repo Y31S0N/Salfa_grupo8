@@ -8,6 +8,7 @@ import usuarioRouter from "./routes/usuario.routes.js";
 import moduloRouter from "./routes/modulo.routes.js";
 import leccionRouter from "./routes//leccionCurso.routes.js";
 import areaRouter from "./routes/area.routes.js";
+import contenidoRouter from "./routes/contenido.routes.js";
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use(cursoRouter);
 app.use(moduloRouter);
 app.use(leccionRouter);
 app.use(areaRouter);
+app.use(contenidoRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

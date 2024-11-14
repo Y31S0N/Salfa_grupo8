@@ -8,7 +8,13 @@ import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { SyncLoader } from "react-spinners";
 
-export default function PrivateLayout_flex() {
+interface PrivateLayoutContentProps {
+  children: React.ReactNode;
+}
+
+const PrivateLayout_content: React.FC<PrivateLayoutContentProps> = ({
+  children,
+}) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const { user, logout, loading } = useUser();
   const navigate = useNavigate();
@@ -146,24 +152,26 @@ export default function PrivateLayout_flex() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <Header toggleNav={toggleNav} />
-      <div className="flex flex-1 relative">
-        <nav
-          className={`w-64 bg-white shadow-md absolute inset-y-0 left-0 transform ${
-            isNavOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-300 ease-in-out z-10 md:relative md:translate-x-0`}
-        >
-          <div className="p-4 md:hidden">
-            <h1 className="text-2xl font-bold text-gray-800">Mi Dashboard</h1>
-          </div>
-          <ul className="mt-4">{renderNavItems()}</ul>
-        </nav>
+    <>
+      <div className="flex flex-col h-screen">
+        <Header toggleNav={toggleNav} />
+        <div className="flex flex-1 relative">
+          <nav
+            className={`w-64 bg-white shadow-md absolute inset-y-0 left-0 transform ${
+              isNavOpen ? "translate-x-0" : "-translate-x-full"
+            } transition-transform duration-300 ease-in-out z-10 md:relative md:translate-x-0`}
+          >
+            <div className="p-4 md:hidden">
+              <h1 className="text-2xl font-bold text-gray-800">Mi Dashboard</h1>
+            </div>
+            <ul className="mt-4">{renderNavItems()}</ul>
+          </nav>
 
-        <main className="flex-1 p-8 overflow-y-auto">
-          <Outlet />
-        </main>
+          <main className="flex-1 overflow-y-auto">{children}</main>
+        </div>
       </div>
-    </div>
+    </>
   );
-}
+};
+
+export default PrivateLayout_content;

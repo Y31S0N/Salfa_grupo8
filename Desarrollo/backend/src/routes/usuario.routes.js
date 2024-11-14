@@ -7,6 +7,7 @@ import {
   getUserInfo,
   verificarUsuario,
   crearUsuario,
+  toggleEstadoUsuario,
 } from "../controllers/usuarioCtrl.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -22,6 +23,7 @@ router.post("/api/login", login);
 router.post("/api/refresh-token", refreshToken);
 
 // PUT
+router.put("/api/usuarios/toggle-estado", verifyToken, toggleEstadoUsuario);
 
 // DELETE
 
