@@ -7,7 +7,7 @@ import {
   getUserInfo,
   crearUsuario,
   obtenerUsuarioYCursos,
-  usuarioConCursosYLecciones
+  usuarioConCursosYLecciones,
   toggleEstadoUsuario,
   actualizarUsuario,
   crearUsuariosBulk,
@@ -19,7 +19,7 @@ const router = Router();
 router.get("/user-info", verifyToken, getUserInfo); //en uso
 router.get("/api/usuarios/", obtenerUsuarios);
 router.get("/api/usuario/:id", obtenerUsuarioYCursos);
-router.get("/api/usuarioLecciones/:id", usuarioConCursosYLecciones)
+router.get("/api/usuarioLecciones/:id", usuarioConCursosYLecciones);
 
 // POST
 router.post("/newuser", verifyToken, crearUsuario);

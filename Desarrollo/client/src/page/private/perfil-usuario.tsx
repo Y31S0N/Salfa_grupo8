@@ -6,10 +6,9 @@ import {
 import { Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
-import React, { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
+
 import { toast } from "sonner";
-import { toast } from 'sonner'
 import {
   Card,
   CardContent,
@@ -49,7 +48,6 @@ type Leccion = {
 };
 
 type Modulo = {
-type Modulo = {
   id: number;
   title: string;
   lecciones: Leccion[];
@@ -69,9 +67,6 @@ export default function PerfilUsuario({}) {
   const [filter, setFilter] = useState<"all" | "completed" | "incomplete">(
     "all"
   );
-
-  const { user } = useUser();
-
 
   const { user } = useUser();
 
@@ -111,10 +106,6 @@ export default function PerfilUsuario({}) {
     );
   };
 
-  const filteredCourses = cursos.filter((course) => {
-    // if (filter === "all") return true;
-    // // if (filter === "completed") return isCourseCompleted(course);
-    // // if (filter === "incomplete") return !isCourseCompleted(course);
   const filteredCourses = cursos.filter((course) => {
     // if (filter === "all") return true;
     // // if (filter === "completed") return isCourseCompleted(course);
@@ -207,8 +198,9 @@ export default function PerfilUsuario({}) {
         </div>
 
         <div
-          className={`grid gap-4 ${view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
-            }`}
+          className={`grid gap-4 ${
+            view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+          }`}
         >
           {cursos.map((course) => (
             <Card key={course.id_curso}>
