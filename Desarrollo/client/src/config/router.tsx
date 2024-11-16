@@ -26,14 +26,15 @@ import Cursos_home from "../page/private/cursos";
 import ListadoCursosUsuario from "../page/private/listado-cursos-usuario";
 import ManejoUsuarios from "../page/private/usuarios-admin";
 import PerfilUsuario from "../page/private/perfil-usuario";
-
+import HomeUsuarios from "../page/private/home-usuarios";
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { UserProvider, useUser } from "../contexts/UserContext";
 import FormularioArea from "../page/private/nueva-area";
 import ListadoAreas from "../page/private/listar-areas";
 import ListadoUsuarios from "../page/private/listarUsuarios";
-
+import RoleBasedRedirect from "../components/RoleBasedRedirect";
+import DetalleCurso from "../page/private/vercurso-usuario";
 // Definimos un tipo para los roles permitidos
 type UserRole = "Administrador" | "Trabajador" | "Usuario";
 
@@ -53,8 +54,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <div>Cargando...</div>;
   }
 
-  if (!user || !allowedRoles.includes(user.role as UserRole)) {
+  if (!user) {
     return <Navigate to="/home" replace />;
+  }
+  if (user.role === "Usuario" && location.pathname === '/home') {
+    return <Navigate to="/homeUsuarios" replace />
+  }
+  if (!allowedRoles.includes(user.role as UserRole)) {
+    return <Navigate to="/home" replace />
   }
 
   return <>{children}</>;
@@ -71,23 +78,43 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "home",
+        path: "/",
         element: (
           <ProtectedRoute
             allowedRoles={["Administrador", "Trabajador", "Usuario"]}
           >
-            <Cursos_home />
+            <RoleBasedRedirect />
           </ProtectedRoute>
-        ),
+        )
       },
       {
-        path: "listado_cursos",
+        path: "home",
         element: (
-          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+          <ProtectedRoute
+            allowedRoles={["Administrador", "Trabajador"]}
+          >
             <Listado_cursos />
           </ProtectedRoute>
         ),
       },
+      {
+        path: "homeUsuarios",
+        element: (
+          <ProtectedRoute
+            allowedRoles={["Usuario"]}
+          >
+            <HomeUsuarios />
+          </ProtectedRoute>
+        ),
+      },
+      // {
+      //   path: "listado_cursos",
+      //   element: (
+      //     <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+      //       <Listado_cursos />
+      //     </ProtectedRoute>
+      //   ),
+      // },
       {
         path: "listado_cursos_usuario",
         element: (
@@ -131,7 +158,7 @@ export const router = createBrowserRouter([
       // USUARIOS
       {
         path: "listarUsuarios",
-        element: <ListadoUsuarios/>,
+        element: <ListadoUsuarios />,
       },
       {
         path: "nuevo_usuario",
@@ -145,29 +172,41 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      {
-        path: "perfil",
-        element: <Perfiladm />,
-      },
+      // {
+      //   path: "perfil",
+      //   element: <Perfiladm />,
+      // },
       {
         path: "dashboard-rh",
         element: <DashboardRRHH />,
       },
       {
-        path: "dashboard-perfil-rh",
+        path: "/dashboard-perfil-rh/:id",
         element: <DetalleUsuarioRRHH />,
       },
       {
         path: "perfilUsuario",
-        element: <PerfilUsuario />,
+        element: (
+          <UserProvider>
+            <PerfilUsuario />
+          </UserProvider>
+        ),
       },
+      {
+        path: "verCursoUsuario/:id",
+        element: (
+          <ProtectedRoute allowedRoles={["Usuario"]}>
+            <DetalleCurso />
+          </ProtectedRoute>
+        )
+      },
+      // ÁREAS
       {
         path: "/formArea",
         element: <FormularioArea onCreate={function (): void {
           throw new Error("Function not implemented.");
         }} />,
       },
-      // ÁREAS
       {
         path: "/listarAreas",
         element: <ListadoAreas />,

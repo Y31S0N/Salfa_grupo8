@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Book, Home, LogOut, User, Activity, UserCog } from "lucide-react";
+import { Book, Home, LogOut, User, Activity, UserCog, Users } from "lucide-react";
 import Header from "../../components/header";
 import NavItem from "../../components/nav-home";
 import { Outlet } from "react-router-dom";
@@ -75,47 +75,29 @@ export default function PrivateLayout_flex() {
       case "Trabajador":
         roleSpecificItems = [
           <NavItem
-            key="profile-worker"
-            to="/perfil"
+            key="activity-user"
+            to="/dashboard-rh"
             icon={<User size={20} />}
-            text="Perfil vista trabajador"
-          />,
-          <NavItem
-            key="courses-worker"
-            to="/listado_cursos"
-            icon={<Book size={20} />}
-            text="Cursos vista trabajador"
-          />,
-          <NavItem
-            key="activity-worker"
-            to="/dashboard-rh"
-            icon={<Activity size={20} />}
-            text="Actividad vista trabajador 1"
-          />,
-          <NavItem
-            key="courses-admin"
-            to="/listado_cursos"
-            icon={<Book size={20} />}
-            text="Cursos vista trabajador"
-          />,
-          <NavItem
-            key="activity-admin"
-            to="/dashboard-rh"
-            icon={<Activity size={20} />}
-            text="Actividad vista trabajador 2"
+            text="Actividad Usuarios"
           />,
           <NavItem
             key="area-worker"
             to="/listarAreas"
             icon={<Activity size={20} />}
-            text="Áreas vista trabajador"
+            text="Áreas"
           />,
           <NavItem
             key="user-worker"
             to="/listarUsuarios"
-            icon={<Activity size={20} />}
-            text="Usuarios vista trabajador"
+            icon={<Users size={20} />}
+            text="Listado Usuarios"
           />,
+          // <NavItem
+          //   key="activity-user"
+          //   to="/dashboard-perfil-rh"
+          //   icon={<Activity size={20} />}
+          //   text="Actividad vista usuario"
+          // />,
         ];
         break;
       case "Usuario":
@@ -131,12 +113,6 @@ export default function PrivateLayout_flex() {
             to="/listado_cursos_usuario"
             icon={<Book size={20} />}
             text="Cursos vista usuario"
-          />,
-          <NavItem
-            key="activity-user"
-            to="/dashboard-perfil-rh"
-            icon={<Activity size={20} />}
-            text="Actividad vista usuario"
           />,
         ];
         break;

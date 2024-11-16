@@ -7,6 +7,8 @@ import {
   getUserInfo,
   verificarUsuario,
   crearUsuario,
+  obtenerUsuarioYCursos,
+  usuarioConCursosYLecciones
 } from "../controllers/usuarioCtrl.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -14,6 +16,8 @@ const router = Router();
 // GET //usamos verifyToken para proteger los endpoint
 router.get("/user-info", verifyToken, getUserInfo);
 router.get("/api/usuarios/", obtenerUsuarios);
+router.get("/api/usuario/:id", obtenerUsuarioYCursos);
+router.get("/api/usuarioLecciones/:id", usuarioConCursosYLecciones)
 
 // POST
 router.post("/verificarusuario", verifyToken, verificarUsuario);

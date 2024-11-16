@@ -60,6 +60,66 @@ export const crearUsuario = async (req, res) => {
     res.status(500).json({ mensaje: "Error al crear usuario" });
   }
 };
+export const obtenerUsuarioYCursos = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const usuario = await prisma.usuario.findUnique({
+      where: {
+        rut: id,
+      },
+      include: {
+        cursoAsignados: {
+          include: {
+            curso: {
+              include: {
+                modulos: {
+                  include: {
+                    lecciones: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        Area: true,
+      },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    // Calcular el progreso de cada curso
+    usuario.cursoAsignados = await Promise.all(usuario.cursoAsignados.map(async (asignacion) => {
+      const curso = asignacion.curso;
+
+      // Contar las lecciones completas
+      const totalLecciones = curso.modulos.reduce((acc, modulo) => acc + modulo.lecciones.length, 0);
+      const leccionesCompletas = curso.modulos.reduce((acc, modulo) => {
+        return acc + modulo.lecciones.filter(leccion => leccion.estado_leccion === true).length;
+      }, 0);
+
+      // Calcular el progreso como un porcentaje
+      const progreso = totalLecciones > 0 ? (leccionesCompletas / totalLecciones) * 100 : 0;
+
+      // Añadir el progreso al curso
+      return {
+        ...asignacion,
+        curso: {
+          ...curso,
+          progreso: progreso,  // Agregar el progreso calculado
+        },
+      };
+    }));
+
+    res.json(usuario);
+  } catch (error) {
+    console.error("Error al obtener el usuario con cursos:", error);
+    res.status(500).json({ error: "Error al obtener el usuario y sus cursos" });
+  }
+};
+
 
 export const obtenerUsuarios = async (req, res) => {
   try {
@@ -320,16 +380,84 @@ export const getUserInfo = async (req, res) => {
 
     const usuario = await prisma.usuario.findUnique({
       where: { correo: userEmail },
-      include: { rol: true },
+      select: {
+        rut: true,
+        nombre: true,
+        apellido_paterno: true,
+        apellido_materno: true,
+        rolId: true,
+        rol: { select: { nombre_rol: true } },
+        Area: { select: { nombre_area: true } },
+        areaId: true,
+      }
     });
+
 
     if (!usuario) {
       return res.status(404).json({ mensaje: "Usuario no encontrado" });
     }
 
-    res.json({ role: usuario.rol.nombre_rol });
+    res.json({
+      role: usuario.rol.nombre_rol,
+      area: usuario.Area.nombre_area,
+      rut: usuario.rut,
+      apellido_paterno: usuario.apellido_paterno,
+      apellido_materno: usuario.apellido_materno,
+      rolId: usuario.rolId,
+      nombre: usuario.nombre,
+      areaId: usuario.areaId
+    });
   } catch (error) {
     console.error("Error al obtener información del usuario:", error);
     res.status(500).json({ mensaje: "Error interno del servidor" });
   }
 };
+
+export const usuarioConCursosYLecciones = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const usuario = await prisma.usuario.findUnique({
+      where: {
+        rut: id,
+      },
+      include: {
+        cursoAsignados: {
+          include: {
+            curso: {
+              include: {
+                modulos: {
+                  include: {
+                    lecciones: {
+                      include: {
+                        Cumplimiento_leccion: {
+                          where: {
+                            usuarioId: id,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    // for (const c of usuario.curso) {
+    //   console.log(c);
+    // }
+    
+    return res.json(usuario);
+
+  } catch (error) {
+    console.error("Error en la consulta de usuario:", error);
+    return res.status(500).json({ message: "Error en la consulta" });
+  }
+};
+

@@ -199,7 +199,11 @@ const coursesData: Course[] = [
             title: "Registro y monitoreo de actividades",
             completed: true,
           },
-          { id: 19, title: "Análisis de resultados", completed: true },
+          {
+            id: 19,
+            title: "Análisis de resultados",
+            completed: true
+          },
         ],
       },
       {
@@ -268,69 +272,10 @@ export default function ListadoCursosUsuario() {
 
   return (
     <>
-      {/* <Card className="mb-8">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <Avatar className="w-24 h-24">
-              <AvatarImage src={worker.avatar} alt={worker.name} />
-              <AvatarFallback>
-                {worker.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="text-center md:text-left">
-              <h1 className="text-2xl font-bold">{worker.name}</h1>
-              <p className="text-muted-foreground">{worker.position}</p>
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <Mail className="w-4 h-4" />
-                  <span>{worker.email}</span>
-                </div>
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{worker.location}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
-
-      {/* <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Cursos Completados
-          </CardTitle>
-          <CardTitle></CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {coursesData.filter(isCourseCompleted).length}/{coursesData.length}
-          </div>
-        </CardContent>
-      </Card> */}
-
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Mis Cursos</h1>
+        <h1 className="text-2xl font-bold mb-4">Todos los Cursos</h1>
 
         <div className="flex justify-between items-center mb-4">
-          <Select
-            onValueChange={(value: "all" | "completed" | "incomplete") =>
-              setFilter(value)
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar cursos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los cursos</SelectItem>
-              <SelectItem value="completed">Completados</SelectItem>
-              <SelectItem value="incomplete">No completados</SelectItem>
-            </SelectContent>
-          </Select>
-
           <div className="space-x-2">
             <Button
               variant={view === "list" ? "default" : "outline"}
@@ -350,9 +295,8 @@ export default function ListadoCursosUsuario() {
         </div>
 
         <div
-          className={`grid gap-4 ${
-            view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
-          }`}
+          className={`grid gap-4 ${view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+            }`}
         >
           {filteredCourses.map((course) => (
             <Card key={course.id}>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { useSearchParams, useNavigate, Link } from 'react-router-dom'; // Importa useNavigate
 import {
     Table,
     TableBody,
@@ -51,7 +51,7 @@ interface Area {
 export default function ListadoUsuarios() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate(); // Inicializa useNavigate
-    const id_area = searchParams.get('id_area');
+    // const id_area = searchParams.get('id_area');
 
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [busqueda, setBusqueda] = useState('');
@@ -62,13 +62,18 @@ export default function ListadoUsuarios() {
     useEffect(() => {
         cargarAreas();
     }, []);
+    // useEffect(() => {
+    //     if (!id_area) {
+    //         navigate("/listarUsuarios", {replace: true})
+    //     }
+    // }, [id_area, navigate])
 
-    useEffect(() => {
-        if (id_area) {
-            setSelectedDept(id_area);
-        }
-        cargarUsuarios(selectedDept);
-    }, [id_area]);
+    // useEffect(() => {
+    //     if (id_area) {
+    //         setSelectedDept(id_area);
+    //     }
+    //     cargarUsuarios(selectedDept);
+    // }, [id_area]);
 
     useEffect(() => {
         cargarUsuarios(selectedDept);
@@ -194,7 +199,11 @@ export default function ListadoUsuarios() {
                             <TableBody>
                                 {usuariosFiltrados.map((usuario) => (
                                     <TableRow key={usuario.rut}>
-                                        <TableCell>{usuario.rut}</TableCell>
+                                        <TableCell>
+                                            <Link to={`/dashboard-perfil-rh/${usuario.rut}`}>
+                                                {usuario.rut}
+                                            </Link>
+                                        </TableCell>
                                         <TableCell>{usuario.nombre}</TableCell>
                                         <TableCell>{usuario.apellido_paterno}</TableCell>
                                         <TableCell>{usuario.apellido_materno}</TableCell>

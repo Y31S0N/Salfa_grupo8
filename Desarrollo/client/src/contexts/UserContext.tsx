@@ -19,7 +19,13 @@ import { useNavigate } from "react-router-dom";
 // Definimos el tipo de UserContext
 interface ExtendedUser extends FirebaseUser {
   role?: string;
-  // Agrega aquí otros campos que puedas necesitar en el futuro
+  area?: string;
+  rut?: string;
+  nombre?: string;
+  apellido_paterno?: string;
+  apellido_materno?: string;
+  rolId?: Number;
+  areaId?: Number;
 }
 
 interface UserContextType {
@@ -53,13 +59,29 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           const idToken = await firebaseUser.getIdToken();
 
-          const response = await api.get<{ role: string }>("/user-info", {
+          const response = await api.get<{
+            role: string,
+            rut: string,
+            apellido_paterno: string,
+            apellido_materno: string,
+            rolId: Number,
+            nombre: string,
+            areaId: Number,
+            area: string,
+          }>("/user-info", {
             headers: { Authorization: `Bearer ${idToken}` },
           });
 
           const extendedUser: ExtendedUser = {
             ...firebaseUser,
             role: response.data.role,
+            rolId: response.data.rolId,
+            rut: response.data.rut,
+            apellido_paterno: response.data.apellido_paterno,
+            apellido_materno: response.data.apellido_materno,
+            areaId: response.data.areaId,
+            area: response.data.area,
+            nombre: response.data.nombre,
           };
           setUser(extendedUser);
         } catch (error) {
