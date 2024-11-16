@@ -38,7 +38,6 @@ import FormularioArea from "../page/private/nueva-area";
 import ListadoAreas from "../page/private/listar-areas";
 import ListadoUsuarios from "../page/private/listarUsuarios";
 import RoleBasedRedirect from "../components/RoleBasedRedirect";
-import DetalleCurso from "../page/private/vercurso-usuario";
 import PaginaCurso from "../page/private/ver_contenido";
 
 // Definimos un tipo para los roles permitidos
