@@ -11,6 +11,7 @@ import {
   signOut,
   onAuthStateChanged,
   User as FirebaseUser,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { auth } from "../config/firebase"; // Asegúrate de que esta ruta sea correcta
 import api from "../services/api";
@@ -18,14 +19,13 @@ import { useNavigate } from "react-router-dom";
 
 // Definimos el tipo de UserContext
 interface ExtendedUser extends FirebaseUser {
-  role?: string;
-  area?: string;
-  rut?: string;
-  nombre?: string;
-  apellido_paterno?: string;
-  apellido_materno?: string;
-  rolId?: Number;
-  areaId?: Number;
+  role: string;
+  rut: string;
+  nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  area: string;
+  correo: string;
 }
 
 interface UserContextType {
@@ -33,6 +33,7 @@ interface UserContextType {
   login: (email: string, password: string) => Promise<ExtendedUser>;
   logout: () => Promise<void>;
   loading: boolean;
+  resetPassword: (email: string) => Promise<boolean>;
 }
 
 // Creamos el contexto
@@ -60,14 +61,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           const idToken = await firebaseUser.getIdToken();
 
           const response = await api.get<{
-            role: string,
-            rut: string,
-            apellido_paterno: string,
-            apellido_materno: string,
-            rolId: Number,
-            nombre: string,
-            areaId: Number,
-            area: string,
+            role: string;
+            rut: string;
+            nombre: string;
+            apellido_paterno: string;
+            apellido_materno: string;
+            area: string;
+            correo: string;
           }>("/user-info", {
             headers: { Authorization: `Bearer ${idToken}` },
           });
@@ -75,13 +75,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           const extendedUser: ExtendedUser = {
             ...firebaseUser,
             role: response.data.role,
-            rolId: response.data.rolId,
             rut: response.data.rut,
+            nombre: response.data.nombre,
             apellido_paterno: response.data.apellido_paterno,
             apellido_materno: response.data.apellido_materno,
-            areaId: response.data.areaId,
             area: response.data.area,
-            nombre: response.data.nombre,
+            correo: response.data.correo,
           };
           setUser(extendedUser);
         } catch (error) {
@@ -128,18 +127,29 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       );
       const idToken = await userCredential.user.getIdToken();
 
-      const response = await api.post<LoginResponse>("/api/login", { idToken });
-      const { token, refreshToken, role } = response.data;
+      // Enviar el idToken al backend
+      const loginResponse = await api.post<LoginResponse>("/api/login", {
+        idToken: idToken, // Asegúrate de que este sea el token de Firebase
+      });
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("refreshToken", refreshToken);
+      // Guardar los tokens JWT del backend
+      localStorage.setItem("token", loginResponse.data.token);
+      localStorage.setItem("refreshToken", loginResponse.data.refreshToken);
+
+      // Configurar el token para futuras peticiones
+      api.defaults.headers.common["Authorization"] = `Bearer ${idToken}`;
+
+      // Obtener información del usuario
+      const userInfoResponse = await api.get("/user-info", {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
 
       const extendedUser: ExtendedUser = {
         ...userCredential.user,
-        role: role,
+        ...userInfoResponse.data,
       };
-      setUser(extendedUser);
 
+      setUser(extendedUser);
       return extendedUser;
     } catch (error) {
       console.error("Error en inicio de sesión:", error);
@@ -164,11 +174,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  return (
-    <UserContext.Provider value={{ user, login, logout, loading }}>
-      {children}
-    </UserContext.Provider>
-  );
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const value = {
+    user,
+    login,
+    logout,
+    loading,
+    resetPassword,
+  };
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
 interface LoginResponse {

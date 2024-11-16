@@ -1,6 +1,7 @@
 //Layouts
 //Privada
 import PrivateLayout_flex from "../page/layouts/private-layout-flex";
+import PrivateLayout_content from "../page/layouts/private-layout-content";
 //Publica
 import RootLayout from "../page/layouts/root-layout";
 //About
@@ -27,6 +28,9 @@ import ListadoCursosUsuario from "../page/private/listado-cursos-usuario";
 import ManejoUsuarios from "../page/private/usuarios-admin";
 import PerfilUsuario from "../page/private/perfil-usuario";
 import HomeUsuarios from "../page/private/home-usuarios";
+import SubirContenido from "../page/private/subircontenido";
+import DetalleCurso from "../page/private/vercurso-usuario";
+
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { UserProvider, useUser } from "../contexts/UserContext";
@@ -35,6 +39,8 @@ import ListadoAreas from "../page/private/listar-areas";
 import ListadoUsuarios from "../page/private/listarUsuarios";
 import RoleBasedRedirect from "../components/RoleBasedRedirect";
 import DetalleCurso from "../page/private/vercurso-usuario";
+import PaginaCurso from "../page/private/ver_contenido";
+
 // Definimos un tipo para los roles permitidos
 type UserRole = "Administrador" | "Trabajador" | "Usuario";
 
@@ -57,11 +63,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (!user) {
     return <Navigate to="/home" replace />;
   }
-  if (user.role === "Usuario" && location.pathname === '/home') {
-    return <Navigate to="/homeUsuarios" replace />
+  if (user.role === "Usuario" && location.pathname === "/home") {
+    return <Navigate to="/homeUsuarios" replace />;
   }
   if (!allowedRoles.includes(user.role as UserRole)) {
-    return <Navigate to="/home" replace />
+    return <Navigate to="/home" replace />;
   }
 
   return <>{children}</>;
@@ -78,21 +84,20 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        path: "/",
+        index: true,
+        path: "home",
         element: (
           <ProtectedRoute
             allowedRoles={["Administrador", "Trabajador", "Usuario"]}
           >
             <RoleBasedRedirect />
           </ProtectedRoute>
-        )
+        ),
       },
       {
         path: "home",
         element: (
-          <ProtectedRoute
-            allowedRoles={["Administrador", "Trabajador"]}
-          >
+          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
             <Listado_cursos />
           </ProtectedRoute>
         ),
@@ -100,9 +105,7 @@ export const router = createBrowserRouter([
       {
         path: "homeUsuarios",
         element: (
-          <ProtectedRoute
-            allowedRoles={["Usuario"]}
-          >
+          <ProtectedRoute allowedRoles={["Usuario"]}>
             <HomeUsuarios />
           </ProtectedRoute>
         ),
@@ -158,11 +161,19 @@ export const router = createBrowserRouter([
       // USUARIOS
       {
         path: "listarUsuarios",
-        element: <ListadoUsuarios />,
+        element: (
+          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+            <ListadoUsuarios />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "nuevo_usuario",
-        element: <N_usuario />,
+        element: (
+          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+            <N_usuario />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "usuarios",
@@ -198,14 +209,18 @@ export const router = createBrowserRouter([
           <ProtectedRoute allowedRoles={["Usuario"]}>
             <DetalleCurso />
           </ProtectedRoute>
-        )
+        ),
       },
       // ÁREAS
       {
         path: "/formArea",
-        element: <FormularioArea onCreate={function (): void {
-          throw new Error("Function not implemented.");
-        }} />,
+        element: (
+          <FormularioArea
+            onCreate={function (): void {
+              throw new Error("Function not implemented.");
+            }}
+          />
+        ),
       },
       {
         path: "/listarAreas",
@@ -216,8 +231,6 @@ export const router = createBrowserRouter([
         element: <ListadoAreas />,
       },
     ],
-
-
   },
   //publicos
   {
@@ -229,6 +242,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
+        index: true,
         path: "/login",
         element: <Login />,
       },
@@ -236,189 +250,20 @@ export const router = createBrowserRouter([
         path: "*",
         element: <NotFound />,
       },
-      {
-        path: "/about",
-        element: <About_layout />,
-      },
     ],
   },
-
-  // CURSOS
-  // {
-  //   path: "/cursos",
-  //   element: <PrivateLayout_clean />,
-  //   children: [
-  //     {
-  //       index: true,
-  //       element: <VistaCursosAdmin />,
-  //     },
-  //   ],
-  // },
-  //   {
-  //     path: "/listado_cursos",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Listado_cursos />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/listado_cursos_usuario",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <ListadoCursosUsuario />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/agregar_cursos",
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Agregar_cursos />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/modificar_curso/:id",
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Modificar_curso />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/vercurso/:id",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Vercurso />,
-  //       },
-  //     ],
-  //   },
-  //   //MODULOS
-  //   {
-  //     path: "/cursos/:id/agregar_modulos", // Cambiado para incluir el ID del curso
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Agregar_modulos />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/cursos/:cursoId/modulos/:moduloId/modificar",
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Modificar_modulos />, // Asegúrate de que este componente maneje la carga del módulo
-  //       },
-  //     ],
-  //   },
-  //   //MODULOS
-
-  //   //LECCIONES
-  //   {
-  //     path: "/cursos/:cursoId/modulos/:moduloId/agregar_lecciones",
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Agregar_lecciones />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/cursos/:cursoId/modulos/:moduloId/modificar_lecciones/:leccionId", // Incluye el ID de la lección
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Modificar_lecciones />,
-  //       },
-  //     ],
-  //   },
-  //   //LECCIONES
-  //   {
-  //     path: "/agregar_contenido",
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Agregar_contenido />,
-  //       },
-  //     ],
-  //   },
-
-  //   // USUARIOS
-  //   {
-  //     path: "/nuevo_usuario",
-  //     element: <PrivateLayout_clean />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <N_usuario />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/usuarios",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <ManejoUsuarios />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/perfil",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <Perfiladm />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/dashboard-rh",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <DashboardRRHH />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/dashboard-perfil-rh",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <DetalleUsuarioRRHH />,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     path: "/perfilUsuario",
-  //     element: <PrivateLayout_flex />,
-  //     children: [
-  //       {
-  //         index: true,
-  //         element: <PerfilUsuario />,
-  //       },
-  //     ],
-  //   },
+  {
+    path: "ver_contenido/:cursoId/:moduloId/:leccionId",
+    element: (
+      <UserProvider>
+        <PrivateLayout_content>
+          <PaginaCurso />
+        </PrivateLayout_content>
+      </UserProvider>
+    ),
+  },
+  {
+    path: "/about",
+    element: <About_layout />,
+  },
 ]);

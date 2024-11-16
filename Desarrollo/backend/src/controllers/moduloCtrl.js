@@ -23,6 +23,7 @@ export const crearModulo = async (req, res) => {
         nombre_modulo,
         descripcion_modulo,
         cursoId, // Asociamos el módulo al curso usando el cursoId
+        estado_modulo: true,
       },
     });
 

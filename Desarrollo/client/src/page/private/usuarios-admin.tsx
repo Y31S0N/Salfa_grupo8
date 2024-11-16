@@ -1,190 +1,222 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger,
-} from "../../components/ui/dialog";
-import { PlusCircle, Pencil, Trash2 } from "lucide-react";
-import N_usuario from "./nuevo-usuario";
+import * as XLSX from "xlsx";
+import api from "../../services/api";
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
+interface ExcelUsuario {
+  rut: string;
+  nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  correo: string;
+  rolId: number;
+  areaId: number;
 }
 
-// Simular datos de usuarios
-const mockUsers: User[] = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  name: `Usuario ${i + 1}`,
-  email: `usuario${i + 1}@example.com`,
-}));
+const UsuariosAdmin = () => {
+  const [usuarios, setUsuarios] = useState<ExcelUsuario[]>([]);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-export default function ManejoUsuarios() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const validarUsuario = (usuario: ExcelUsuario): string[] => {
+    const errores: string[] = [];
 
-  const [usuarios, setUsuarios] = useState<any[]>([]);
-  const usersPerPage = 10;
-  const totalPages = Math.ceil(users.length / usersPerPage);
+    // Validar RUT (implementa tu lógica de validación de RUT aquí)
+    if (!usuario.rut) errores.push(`Falta RUT para usuario ${usuario.nombre}`);
 
-  const getCurrentUsers = () => {
-    const startIndex = (currentPage - 1) * usersPerPage;
-    return users.slice(startIndex, startIndex + usersPerPage);
+    // Validar correo
+    if (!usuario.correo || !usuario.correo.includes("@"))
+      errores.push(`Correo inválido para usuario ${usuario.nombre}`);
+
+    // Validar campos requeridos
+    if (!usuario.nombre) errores.push("El nombre es requerido");
+    if (!usuario.apellido_paterno)
+      errores.push("El apellido paterno es requerido");
+    if (!usuario.apellido_materno)
+      errores.push("El apellido materno es requerido");
+    if (!usuario.rolId) errores.push("El rol es requerido");
+    if (!usuario.areaId) errores.push("El área es requerida");
+
+    return errores;
   };
 
-  const handleUpdateUser = () => {
-    if (editingUser) {
-      setUsers(
-        users.map((user) => (user.id === editingUser.id ? editingUser : user))
-      );
-      setEditingUser(null);
-    }
-  };
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const cargarUsuarios = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/usuario");
-      if (!response.ok) {
-        // setUsuarios(response.data);
-        console.log(response);
-        console.log("Ta bien");
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const workbook = XLSX.read(event.target?.result, { type: "binary" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json<ExcelUsuario>(worksheet);
+
+        // Validar cada usuario
+        const errores: string[] = [];
+        data.forEach((usuario, index) => {
+          const usuarioErrores = validarUsuario(usuario);
+          if (usuarioErrores.length > 0) {
+            errores.push(`Errores en fila ${index + 2}:`, ...usuarioErrores);
+          }
+        });
+
+        if (errores.length > 0) {
+          setErrorMessages(errores);
+          return;
+        }
+
+        // Si no hay errores, proceder con la carga
+        setUsuarios(data);
+
+        // Enviar usuarios al backend
+        const response = await api.post("/api/usuarios/bulk", {
+          usuarios: data,
+        });
+        alert("Usuarios cargados exitosamente");
+      } catch (error) {
+        console.error("Error al procesar el archivo:", error);
+        setErrorMessages(["Error al procesar el archivo Excel"]);
       }
-    } catch (error) {
-      console.error("Error => ", error);
-    }
-  };
-  // console.log();
+    };
 
-  const handleDeleteUser = (id: number) => {
-    setUsers(users.filter((user) => user.id !== id));
+    reader.readAsBinaryString(file);
   };
 
-  useEffect(() => {
-    cargarUsuarios();
-  }, []);
+  const handleDownloadTemplate = () => {
+    const template = XLSX.utils.book_new();
+    const templateData = [
+      {
+        rut: "12.345.678-9",
+        nombre: "Juan",
+        apellido_paterno: "Pérez",
+        apellido_materno: "González",
+        correo: "juan.perez@ejemplo.com",
+        rolId: 1,
+        areaId: 1,
+      },
+      {
+        rut: "11.111.111-1",
+        nombre: "María",
+        apellido_paterno: "López",
+        apellido_materno: "Soto",
+        correo: "maria.lopez@ejemplo.com",
+        rolId: 2,
+        areaId: 1,
+      },
+      {
+        rut: "22.222.222-2",
+        nombre: "Pedro",
+        apellido_paterno: "Rodríguez",
+        apellido_materno: "Muñoz",
+        correo: "pedro.rodriguez@ejemplo.com",
+        rolId: 3,
+        areaId: 1,
+      },
+      {
+        rut: "33.333.333-3",
+        nombre: "Ana",
+        apellido_paterno: "García",
+        apellido_materno: "Martínez",
+        correo: "ana.garcia@ejemplo.com",
+        rolId: 1,
+        areaId: 1,
+      },
+      {
+        rut: "44.444.444-4",
+        nombre: "Carlos",
+        apellido_paterno: "Fernández",
+        apellido_materno: "Silva",
+        correo: "carlos.fernandez@ejemplo.com",
+        rolId: 2,
+        areaId: 1,
+      },
+      {
+        rut: "55.555.555-5",
+        nombre: "Laura",
+        apellido_paterno: "Torres",
+        apellido_materno: "Rojas",
+        correo: "laura.torres@ejemplo.com",
+        rolId: 3,
+        areaId: 1,
+      },
+      {
+        rut: "66.666.666-6",
+        nombre: "Diego",
+        apellido_paterno: "Vargas",
+        apellido_materno: "Castro",
+        correo: "diego.vargas@ejemplo.com",
+        rolId: 1,
+        areaId: 1,
+      },
+      {
+        rut: "77.777.777-7",
+        nombre: "Carmen",
+        apellido_paterno: "Morales",
+        apellido_materno: "Flores",
+        correo: "carmen.morales@ejemplo.com",
+        rolId: 2,
+        areaId: 1,
+      },
+      {
+        rut: "88.888.888-8",
+        nombre: "Roberto",
+        apellido_paterno: "Herrera",
+        apellido_materno: "Díaz",
+        correo: "roberto.herrera@ejemplo.com",
+        rolId: 3,
+        areaId: 1,
+      },
+      {
+        rut: "99.999.999-9",
+        nombre: "Patricia",
+        apellido_paterno: "Navarro",
+        apellido_materno: "Pinto",
+        correo: "patricia.navarro@ejemplo.com",
+        rolId: 1,
+        areaId: 1,
+      },
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(templateData);
+    XLSX.utils.book_append_sheet(template, ws, "Template");
+    XLSX.writeFile(template, "plantilla_usuarios.xlsx");
+  };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Gestión de Usuarios</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Administración de Usuarios</h1>
 
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="mb-4">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Crear Usuario
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-            <DialogDescription>
-              Ingrese los detalles del nuevo usuario aquí.
-            </DialogDescription>
-          </DialogHeader>
-          <N_usuario />
-        </DialogContent>
-      </Dialog>
-
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {getCurrentUsers().map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>{user.id}</TableCell>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>{user.email}</TableCell>
-              <TableCell>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="icon" className="mr-2">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Editar Usuario</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <Input
-                        placeholder="Nombre"
-                        value={editingUser?.name || ""}
-                        onChange={(e) =>
-                          setEditingUser({
-                            ...editingUser!,
-                            name: e.target.value,
-                          })
-                        }
-                      />
-                      <Input
-                        placeholder="Email"
-                        value={editingUser?.email || ""}
-                        onChange={(e) =>
-                          setEditingUser({
-                            ...editingUser!,
-                            email: e.target.value,
-                          })
-                        }
-                      />
-                      <Button onClick={handleUpdateUser}>Actualizar</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleDeleteUser(user.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      <div className="flex justify-between items-center mt-4">
-        <Button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Anterior
+      <div className="space-y-4">
+        <Button onClick={handleDownloadTemplate}>
+          Descargar Plantilla Excel
         </Button>
-        <span>
-          Página {currentPage} de {totalPages}
-        </span>
-        <Button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-        >
-          Siguiente
-        </Button>
+
+        <div className="flex items-center space-x-2">
+          <Input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileUpload}
+            className="max-w-md"
+          />
+          <Button>Cargar Usuarios</Button>
+        </div>
+
+        {errorMessages.length > 0 && (
+          <div className="mt-4 p-4 bg-red-100 rounded">
+            <h3 className="font-bold text-red-700">Errores encontrados:</h3>
+            <ul className="list-disc pl-4">
+              {errorMessages.map((error, index) => (
+                <li key={index} className="text-red-600">
+                  {error}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default UsuariosAdmin;

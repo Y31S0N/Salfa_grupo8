@@ -6,7 +6,9 @@ import {
 import { Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
+import { toast } from "sonner";
 import { toast } from 'sonner'
 import {
   Card,
@@ -31,13 +33,6 @@ import capacitacion from "../../assets/capacitacion.png";
 import mantenimiento from "../../assets/mantenimiento.png";
 import seguridad from "../../assets/seguridad.png";
 
-/* interface CardProps {
-  image: string;
-  title: string;
-  description: string;
-  link: string;
-} */
-
 const worker = {
   name: "José Barra",
   position: "Ingeniero de Mantenimiento",
@@ -54,9 +49,10 @@ type Leccion = {
 };
 
 type Modulo = {
+type Modulo = {
   id: number;
   title: string;
-  lecciones: Leccion;
+  lecciones: Leccion[];
 };
 
 type Curso = {
@@ -67,31 +63,15 @@ type Curso = {
   modulos: Modulo[];
 };
 
-interface Usuario {
-  id: string;
-  rut: string;
-  nombre: string;
-  apellido_paterno: string;
-  apellido_materno: string;
-  correo: string;
-  rol: {
-    id_rol: Number,
-    nombre_rol: string;
-  };
-  Area: {
-    id_area: Number;
-    nombre_area: string;
-  };
-  areaId: Number;
-  rolId: Number;
-}
+import { useUser } from "../../contexts/UserContext";
 
-import { useUser } from '../../contexts/UserContext';
-
-export default function PerfilUsuario({ }) {
+export default function PerfilUsuario({}) {
   const [filter, setFilter] = useState<"all" | "completed" | "incomplete">(
     "all"
   );
+
+  const { user } = useUser();
+
 
   const { user } = useUser();
 
@@ -103,7 +83,9 @@ export default function PerfilUsuario({ }) {
   const cargarCursos = async (userRut) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/cursosUsuario/${userRut}`);
+      const response = await fetch(
+        `http://localhost:3000/api/cursosUsuario/${userRut}`
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -111,7 +93,7 @@ export default function PerfilUsuario({ }) {
       data.sort((a, b) => a.nombre_curso.localeCompare(b.nombre_curso));
       setCursos(data);
     } catch (error) {
-      console.error('Error al cargar cursos:', error);
+      console.error("Error al cargar cursos:", error);
     } finally {
       setIsLoading(false);
     }
@@ -133,6 +115,10 @@ export default function PerfilUsuario({ }) {
     // if (filter === "all") return true;
     // // if (filter === "completed") return isCourseCompleted(course);
     // // if (filter === "incomplete") return !isCourseCompleted(course);
+  const filteredCourses = cursos.filter((course) => {
+    // if (filter === "all") return true;
+    // // if (filter === "completed") return isCourseCompleted(course);
+    // // if (filter === "incomplete") return !isCourseCompleted(course);
     return true;
   });
 
@@ -143,18 +129,20 @@ export default function PerfilUsuario({ }) {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="w-24 h-24">
               <AvatarImage src={user?.nombre} alt={user?.nombre} />
+              <AvatarImage src={user?.nombre} alt={user?.nombre} />
               <AvatarFallback>
-                {user?.nombre
+                {((user?.nombre || "") + (user?.apellido_paterno || ""))
                   .split(" ")
                   .map((n) => n[0])
-                  .join("")}{user?.apellido_paterno
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                  .join("")
+                  .toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="text-center md:text-left">
-              <h1 className="text-2xl font-bold">{user?.nombre} {user?.apellido_paterno} {user?.apellido_materno}</h1>
+              <h1 className="text-2xl font-bold">
+                {user?.nombre || ""} {user?.apellido_paterno || ""}{" "}
+                {user?.apellido_materno || ""}
+              </h1>
               <p className="text-muted-foreground">{user?.area}</p>
               <div className="mt-4 space-y-2">
                 <div className="flex items-center justify-center md:justify-start gap-2">
