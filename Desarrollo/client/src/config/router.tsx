@@ -86,10 +86,8 @@ export const router = createBrowserRouter([
         index: true,
         path: "home",
         element: (
-          <ProtectedRoute
-            allowedRoles={["Administrador", "Trabajador", "Usuario"]}
-          >
-            <RoleBasedRedirect />
+          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+            <Listado_cursos />
           </ProtectedRoute>
         ),
       },

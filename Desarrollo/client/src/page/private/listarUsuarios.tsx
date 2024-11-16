@@ -37,6 +37,7 @@ import {
 import N_usuario from "./nuevo-usuario";
 import { useUser } from "../../contexts/UserContext";
 import { EditarUsuario } from "./EditarUsuario";
+import { BarChart2 } from "lucide-react";
 
 interface Usuario {
   id: string;
@@ -377,6 +378,16 @@ export default function ListadoUsuarios() {
                             ) : (
                               <UserCheck className="h-4 w-4" />
                             )}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="text-blue-500 ml-2"
+                            onClick={() =>
+                              navigate(`/dashboard-perfil-rh/${usuario.id}`)
+                            }
+                          >
+                            <BarChart2 className="h-4 w-4" />
                           </Button>
                         </>
                       ) : (
