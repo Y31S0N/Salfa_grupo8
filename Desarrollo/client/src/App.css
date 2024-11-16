@@ -40,3 +40,38 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.breadcrumb-container {
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+}
+
+.breadcrumb-list {
+  display: flex;
+  list-style: none;
+  gap: 5px;
+  font-size: 14px;
+  color: #007bff;
+}
+
+.breadcrumb-item {
+  text-transform: capitalize;
+}
+
+.breadcrumb-item:not(:last-child)::after {
+  content: ">";
+  margin-left: 5px;
+  color: #6c757d;
+}
+
+.breadcrumb-item a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.breadcrumb-item.active {
+  color: #6c757d;
+  pointer-events: none;
+  font-weight: bold;
+}

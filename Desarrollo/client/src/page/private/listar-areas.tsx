@@ -11,7 +11,6 @@ import { useEffect } from "react";
 import { DialogHeader, Dialog, DialogContent, DialogTrigger, DialogTitle } from '../../components/ui/dialog'
 import FormularioArea from './nueva-area'
 
-import { useNavigate } from 'react-router-dom';
 import FormularioModArea from './modificar-area';
 
 
@@ -20,13 +19,6 @@ export default function ListadoAreas() {
     const [openModify, setOpenModify] = useState(false);
     const [busqueda, setBusqueda] = useState('');
     const [areas, setAreas] = useState<any[]>([]);
-    const [isLoading, setLoading] = useState(true);
-
-    const navigate = useNavigate();
-
-    const handleVerUsuarios = (id_area: string): void => {
-        navigate(`/listarUsuarios?id_area=${id_area}`);
-    }
 
     const handleFormModificar = async () => {
         setOpenModify(true);
@@ -102,11 +94,7 @@ export default function ListadoAreas() {
                             <CardTitle>{area.nombre_area}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Button onClick={() => handleVerUsuarios(area.id_area)} variant="outline" className="w-full">
-                                Ver Usuarios
-                            </Button>
-
-                            <Button onClick={() => setOpenModify(area.id_area)} variant="outline" className="w-full my-1">
+                            <Button onClick={() => setOpenModify(area.id_area)} variant="outline" className="w-full  mb-3">
                                 Modificar Área
                             </Button>
 

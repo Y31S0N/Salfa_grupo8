@@ -30,6 +30,7 @@ export const crearLeccion = async (req, res) => {
         descripcion_leccion,
         fecha_de_creacion_leccion: fechaCreacion,
         moduloId,
+        estado_leccion: true,
       },
     });
 
