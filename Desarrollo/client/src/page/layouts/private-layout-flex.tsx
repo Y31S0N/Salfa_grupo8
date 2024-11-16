@@ -80,13 +80,13 @@ export default function PrivateLayout_flex() {
             key="leerusers"
             to="/usuarios"
             icon={<UserCog size={20} />}
-            text="Gestión de usuarios"
+            text="Carga de usuarios"
           />,
           <NavItem
             key="user-worker"
             to="/listarUsuarios"
             icon={<Activity size={20} />}
-            text="Usuarios vista trabajador"
+            text="Gestión de usuarios"
           />,
         ];
         break;

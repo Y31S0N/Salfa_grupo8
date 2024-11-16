@@ -28,11 +28,7 @@ const formatFileName = (fileName: string): string => {
   const parts = fileName.split("_");
   if (parts.length <= 1) return fileName;
 
-  const nameWithExtension = parts.slice(1).join("_");
-
-  const nameWithoutExtension = nameWithExtension.split(".")[0];
-
-  return nameWithoutExtension;
+  return parts.slice(1).join("_");
 };
 
 // Definir el tipo para los elementos ordenables
@@ -233,12 +229,10 @@ export default function VerContenido() {
     }
 
     try {
-      const extension = editingContent.nombre_archivo.split(".").pop();
-      const newFileNameWithExtension = `${newFileName}.${extension}`;
       const response = await axios.put(
         `http://localhost:3000/api/contenido/${editingContent.id_contenido}/rename`,
         {
-          newFileName: newFileNameWithExtension,
+          newFileName: newFileName,
         }
       );
 

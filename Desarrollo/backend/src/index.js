@@ -9,7 +9,7 @@ import moduloRouter from "./routes/modulo.routes.js";
 import leccionRouter from "./routes//leccionCurso.routes.js";
 import areaRouter from "./routes/area.routes.js";
 import contenidoRouter from "./routes/contenido.routes.js";
-
+import rolRouter from "./routes/rol.routes.js";
 const app = express();
 
 // Configuración de la conexión a la base de datos
@@ -36,6 +36,7 @@ app.use(moduloRouter);
 app.use(leccionRouter);
 app.use(areaRouter);
 app.use(contenidoRouter);
+app.use(rolRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

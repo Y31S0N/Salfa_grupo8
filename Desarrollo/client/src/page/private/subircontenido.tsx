@@ -32,6 +32,36 @@ const SubirContenido: React.FC<SubirContenidoProps> = ({
     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
   ];
 
+  const validateFileName = (fileName: string): string | null => {
+    // Calculamos el largo del timestamp (ejemplo: "2024-11-15-17-32-32_")
+    const timestampLength = "2024-11-15-17-32-32_".length; // 20 caracteres
+
+    // Removemos la extensión del archivo
+    const nameWithoutExtension = fileName.substring(
+      0,
+      fileName.lastIndexOf(".")
+    );
+    const extension = fileName.substring(fileName.lastIndexOf("."));
+
+    // Calculamos cuántos caracteres necesita recortar
+    const excesoCaracteres = nameWithoutExtension.length + timestampLength - 50;
+
+    if (excesoCaracteres > 0) {
+      const nombreSugerido = nameWithoutExtension.substring(
+        0,
+        nameWithoutExtension.length - excesoCaracteres
+      );
+      return `El nombre del archivo es demasiado largo. 
+        - Longitud actual: ${nameWithoutExtension.length} caracteres
+        - Longitud máxima permitida: ${50 - timestampLength} caracteres
+        - Necesitas recortar: ${excesoCaracteres} caracteres
+        
+        Sugerencia: Renombra tu archivo a "${nombreSugerido}${extension}"`;
+    }
+
+    return null;
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -47,6 +77,13 @@ const SubirContenido: React.FC<SubirContenidoProps> = ({
         );
         return;
       }
+
+      const fileNameError = validateFileName(file.name);
+      if (fileNameError) {
+        setError(fileNameError);
+        return;
+      }
+
       setFile(file);
       setError(null);
     }
@@ -59,15 +96,26 @@ const SubirContenido: React.FC<SubirContenidoProps> = ({
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const droppedFile = event.dataTransfer.files[0];
-    if (
-      droppedFile &&
-      allowedTypes.some((type) => droppedFile.type.match(type))
-    ) {
+    if (droppedFile) {
+      const isAllowedType = allowedTypes.some((type) =>
+        type.endsWith("/*")
+          ? droppedFile.type.startsWith(type.replace("/*", ""))
+          : droppedFile.type === type
+      );
+
+      if (!isAllowedType) {
+        setError("Tipo de archivo no permitido");
+        return;
+      }
+
+      const fileNameError = validateFileName(droppedFile.name);
+      if (fileNameError) {
+        setError(fileNameError);
+        return;
+      }
+
       setFile(droppedFile);
       setError(null);
-    } else {
-      setFile(null);
-      setError("error");
     }
   };
 
@@ -144,6 +192,12 @@ const SubirContenido: React.FC<SubirContenidoProps> = ({
           {file && (
             <div className="text-sm text-gray-600">
               Archivo seleccionado: {file.name}
+            </div>
+          )}
+          {error && error !== "success" && error !== "error" && (
+            <div className="flex items-start text-sm text-red-600 whitespace-pre-line">
+              <XCircle className="h-5 w-5 mr-2 mt-1 flex-shrink-0" />
+              {error}
             </div>
           )}
           {error === "error" && (

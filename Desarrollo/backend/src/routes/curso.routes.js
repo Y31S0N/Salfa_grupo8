@@ -6,13 +6,18 @@ import {
   obtenerCurso,
   deleteCurso,
   editCurso,
+  obtenerCursosUsuario,
+  obtenerCursosNoUsuario,
+  obtenerCursoEstructura,
 } from "../controllers/cursoCtrl.js";
 
 const router = Router();
 //GET
 router.get("/cursos", obtenerCursos);
 router.get("/cursos/:id", obtenerCurso);
-
+router.get("/api/cursosUsuario/:usuarioId", obtenerCursosUsuario);
+router.get("/api/cursosNoUsuario/:usuarioId", obtenerCursosNoUsuario);
+router.get("/api/cursoEstructura/:id", obtenerCursoEstructura);
 //POST
 router.post("/cursos", crearcursos);
 

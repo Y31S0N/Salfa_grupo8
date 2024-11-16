@@ -91,3 +91,71 @@ export const editCurso = async (req, res) => {
     res.status(500).json({ error: "Error al actualizar el curso" });
   }
 };
+
+export const obtenerCursosUsuario = async (req, res) => {
+  const { usuarioId } = req.params;
+
+  try {
+    const cursos = await prisma.cursoCapacitacion.findMany({
+      where: {
+        cursoAsignados: {
+          some: {
+            usuarioId: usuarioId,
+          },
+        },
+        estado_curso: true,
+      },
+    });
+    res.json(cursos);
+  } catch (error) {
+    console.error("Error al obtener cursos por ID:", error);
+    res.status(500).json({ error: "Error al obtener cursos" });
+  }
+};
+
+export const obtenerCursosNoUsuario = async (req, res) => {
+  const { usuarioId } = req.params;
+  try {
+    const cursos = await prisma.cursoCapacitacion.findMany({
+      where: {
+        cursoAsignados: {
+          none: {
+            usuarioId: usuarioId,
+          },
+        },
+        estado_curso: true,
+      },
+    });
+    res.json(cursos);
+  } catch (error) {
+    console.error("Error al obtener cursos por no ID:", error);
+    res.status(500).json({ error: "Error al obtener cursos" });
+  }
+};
+
+export const obtenerCursoEstructura = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const curso = await prisma.cursoCapacitacion.findUnique({
+      where: {
+        id_curso: parseInt(id),
+      },
+      include: {
+        modulos: {
+          where: {},
+          include: {
+            lecciones: {},
+          },
+        },
+      },
+    });
+    if (!curso) {
+      return res.status(404).json({ error: "Curso no encontrado" });
+    }
+    res.json(curso);
+  } catch (error) {
+    console.error("Error al obtener el curso:", error);
+    res.status(500).json({ error: "Error al obtener el curso" });
+  }
+};

@@ -6,6 +6,8 @@ import {
   renameFile,
   deleteFile,
   reorderContenido,
+  registrarVisualizacion,
+  getRegistrosVisualizacion,
 } from "../controllers/contenidoCtrl.js";
 import fileUpload from "express-fileupload";
 
@@ -30,5 +32,12 @@ router.put("/api/contenido/:id_contenido/rename", renameFile);
 router.delete("/api/contenido/:id_contenido", deleteFile);
 
 router.put("/api/contenido/reorder", reorderContenido);
+
+router.post("/api/contenido/registrar-visualizacion", registrarVisualizacion);
+
+router.get(
+  "/registros-visualizacion/:cursoId/:userId",
+  getRegistrosVisualizacion
+);
 
 export default router;

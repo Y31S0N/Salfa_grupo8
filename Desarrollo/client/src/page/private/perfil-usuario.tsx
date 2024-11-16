@@ -3,13 +3,11 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "../../components/ui/avatar";
-// import { Badge } from "@/components/ui/badge";
-//import { Briefcase, GraduationCap, Mail, MapPin, Phone } from "lucide-react";
 import { Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-// import { PublishAlert, DisableAlert } from "../../components/ui/mensaje_alerta";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -33,13 +31,6 @@ import capacitacion from "../../assets/capacitacion.png";
 import mantenimiento from "../../assets/mantenimiento.png";
 import seguridad from "../../assets/seguridad.png";
 
-/* interface CardProps {
-  image: string;
-  title: string;
-  description: string;
-  link: string;
-} */
-
 const worker = {
   name: "José Barra",
   position: "Ingeniero de Mantenimiento",
@@ -49,224 +40,75 @@ const worker = {
   avatar: "/placeholder.svg?height=100&width=100",
 };
 
-type Lesson = {
+type Leccion = {
   id: number;
   title: string;
   completed: boolean;
 };
 
-type Module = {
+type Modulo = {
   id: number;
   title: string;
-  lessons: Lesson[];
+  lecciones: Leccion[];
 };
 
-type Course = {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  modules: Module[];
+type Curso = {
+  id_curso: number;
+  nombre_curso: string;
+  descripcion_curso: string;
+  fecha_limite: string;
+  modulos: Modulo[];
 };
 
-const coursesData: Course[] = [
-  {
-    id: 1,
-    title: "Capacitación Minera",
-    description:
-      "Este curso está diseñado para proporcionar una comprensión integral de la minería, abordando desde sus fundamentos históricos hasta las tecnologías modernas utilizadas en la industria. Los participantes aprenderán sobre los diferentes tipos de minerales, los procesos ...",
-    image: capacitacion,
-    modules: [
-      {
-        id: 1,
-        title: "Fundamentos de Minería",
-        lessons: [
-          { id: 1, title: "Tipos de minerales", completed: true },
-          { id: 2, title: "Procesos de extracción", completed: true },
-        ],
-      },
-      {
-        id: 2,
-        title: "Equipos mineros",
-        lessons: [
-          {
-            id: 3,
-            title: "Mauinaria y Herramientas utilizadas",
-            completed: true,
-          },
-          { id: 4, title: "Mantenimiento básico en equipos", completed: true },
-        ],
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "Mantención de maquinaria",
-    description:
-      "El curso de mantención de maquinaria está orientado a equipar a los participantes con los conocimientos y habilidades necesarios para llevar a cabo un mantenimiento efectivo. Se cubrirán los fundamentos del mantenimiento, incluidas las técnicas preventivas y correctivas...",
-    image: seguridad,
-    modules: [
-      {
-        id: 3,
-        title: "Mantenimiento preventivo",
-        lessons: [
-          { id: 5, title: "Inspecciones y revisiones", completed: false },
-          { id: 6, title: "Registro de mantenimiento", completed: false },
-        ],
-      },
-      {
-        id: 4,
-        title: "Diagnóstico de fallas",
-        lessons: [
-          {
-            id: 7,
-            title: "Identificación de problemas comunes",
-            completed: false,
-          },
-          { id: 8, title: "Técnicas de diagnóstico", completed: false },
-          { id: 9, title: "Soluciones y reemplazos", completed: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: "Seguridad Industrial",
-    description:
-      "Este curso se enfoca en la seguridad en el entorno laboral, enseñando a los participantes sobre la importancia de las normativas de seguridad y la evaluación de riesgos. Se examinarán los equipos de protección personal y su correcto uso, así como la prevención de accidentes...",
-    image: mantenimiento,
-    modules: [
-      {
-        id: 5,
-        title: "Principios de seguridad",
-        lessons: [
-          { id: 10, title: "Legislación y normativas", completed: true },
-          { id: 11, title: "Evaluación de riesgos", completed: true },
-        ],
-      },
-      {
-        id: 6,
-        title: "Equipos de protección personal (EPP)",
-        lessons: [
-          { id: 12, title: "Tipos de EPP y su uso", completed: true },
-          {
-            id: 13,
-            title: "Concientización y capacitación en EPP",
-            completed: true,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 4,
-    title: "Capacitación Avanzada",
-    description:
-      "El curso de capacitación avanzada está diseñado para aquellos que buscan profundizar en temas tecnológicos y de liderazgo en el sector minero. Los participantes explorarán las tecnologías emergentes, como la inteligencia artificial y el análisis de datos, y aprenderán a...",
-    image: seguridad,
-    modules: [
-      {
-        id: 5,
-        title: "Tecnologías emergentes",
-        lessons: [
-          { id: 14, title: "IA y minería", completed: false },
-          {
-            id: 15,
-            title: "Automatización de procesos mineros",
-            completed: false,
-          },
-        ],
-      },
-      {
-        id: 6,
-        title: "Liderazgo y gestión de equipos",
-        lessons: [
-          { id: 16, title: "Habilidades de Liderazgo", completed: true },
-          { id: 17, title: "Dinámicas de grupo", completed: false },
-        ],
-      },
-    ],
-  },
-  {
-    id: 5,
-    title: "Mantenimiento Preventivo",
-    description:
-      "Este curso proporciona a los participantes un entendimiento completo del mantenimiento preventivo, su importancia y su aplicación práctica. Se enseñarán conceptos básicos, ejecución de procedimientos y técnicas para llevar un registro efectivo del mantenimiento. Los...",
-    image: mantenimiento,
-    modules: [
-      {
-        id: 5,
-        title: "Ejecución del Mantenimiento",
-        lessons: [
-          {
-            id: 18,
-            title: "Registro y monitoreo de actividades",
-            completed: true,
-          },
-          { id: 19, title: "Análisis de resultados", completed: true },
-        ],
-      },
-      {
-        id: 6,
-        title: "Mejora continua",
-        lessons: [
-          {
-            id: 20,
-            title: "Evaluación del proceso de mantenimiento",
-            completed: true,
-          },
-          {
-            id: 21,
-            title: "Implementación de Mejores Prácticas",
-            completed: false,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 6,
-    title: "Seguridad y Prevención",
-    description:
-      "El curso de seguridad y prevención se centra en la creación de un entorno laboral seguro. Los participantes aprenderán sobre la importancia de la seguridad en el trabajo, las normativas aplicables y cómo evaluar riesgos laborales. Se cubrirán técnicas para el manejo de emergencias...",
-    image: capacitacion,
-    modules: [
-      {
-        id: 5,
-        title: "Manejo de emergencias",
-        lessons: [
-          { id: 22, title: "Planes de Emergencia", completed: true },
-          { id: 23, title: "Simulacros y Prácticas", completed: true },
-        ],
-      },
-      {
-        id: 6,
-        title: "Promoción de una cultura de seguridad",
-        lessons: [
-          { id: 12, title: "Capacitación y Conciencia", completed: true },
-          { id: 13, title: "Comunicación en Deguridad", completed: false },
-        ],
-      },
-    ],
-  },
-];
+import { useUser } from "../../contexts/UserContext";
 
-export default function PerfilUsuario() {
+export default function PerfilUsuario({}) {
   const [filter, setFilter] = useState<"all" | "completed" | "incomplete">(
     "all"
   );
-  const [view, setView] = useState<"list" | "grid">("grid");
 
-  const isCourseCompleted = (course: Course) => {
-    return course.modules.every((module) =>
-      module.lessons.every((lesson) => lesson.completed)
+  const { user } = useUser();
+
+  const [view, setView] = useState<"list" | "grid">("grid");
+  const [isLoading, setIsLoading] = useState(true);
+  const [cursos, setCursos] = useState<Curso[]>([]);
+
+  // CARGA DE USUARIOS Y CURSOS
+  const cargarCursos = async (userRut) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/cursosUsuario/${userRut}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      data.sort((a, b) => a.nombre_curso.localeCompare(b.nombre_curso));
+      setCursos(data);
+    } catch (error) {
+      console.error("Error al cargar cursos:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.rut) {
+      cargarCursos(user.rut);
+    }
+  }, [user?.rut]);
+
+  const isCourseCompleted = (course: Curso) => {
+    return course.modulos.every((modulo) =>
+      modulo.lecciones.every((lesson) => lesson.completed)
     );
   };
 
-  const filteredCourses = coursesData.filter((course) => {
-    if (filter === "all") return true;
-    if (filter === "completed") return isCourseCompleted(course);
-    if (filter === "incomplete") return !isCourseCompleted(course);
+  const filteredCourses = cursos.filter((course) => {
+    // if (filter === "all") return true;
+    // // if (filter === "completed") return isCourseCompleted(course);
+    // // if (filter === "incomplete") return !isCourseCompleted(course);
     return true;
   });
 
@@ -276,25 +118,25 @@ export default function PerfilUsuario() {
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="w-24 h-24">
-              <AvatarImage src={worker.avatar} alt={worker.name} />
+              <AvatarImage src={user?.nombre} alt={user?.nombre} />
               <AvatarFallback>
-                {worker.name
+                {((user?.nombre || "") + (user?.apellido_paterno || ""))
                   .split(" ")
                   .map((n) => n[0])
-                  .join("")}
+                  .join("")
+                  .toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="text-center md:text-left">
-              <h1 className="text-2xl font-bold">{worker.name}</h1>
-              <p className="text-muted-foreground">{worker.position}</p>
+              <h1 className="text-2xl font-bold">
+                {user?.nombre || ""} {user?.apellido_paterno || ""}{" "}
+                {user?.apellido_materno || ""}
+              </h1>
+              <p className="text-muted-foreground">{user?.area}</p>
               <div className="mt-4 space-y-2">
                 <div className="flex items-center justify-center md:justify-start gap-2">
                   <Mail className="w-4 h-4" />
-                  <span>{worker.email}</span>
-                </div>
-                <div className="flex items-center justify-center md:justify-start gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{worker.location}</span>
+                  <span>{user?.email}</span>
                 </div>
               </div>
             </div>
@@ -311,7 +153,7 @@ export default function PerfilUsuario() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {coursesData.filter(isCourseCompleted).length}/{coursesData.length}
+            {/* {coursesData.filter(isCourseCompleted).length}/{coursesData.length} PINTADO */}
           </div>
         </CardContent>
       </Card>
@@ -358,28 +200,28 @@ export default function PerfilUsuario() {
             view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
           }`}
         >
-          {filteredCourses.map((course) => (
-            <Card key={course.id}>
+          {cursos.map((course) => (
+            <Card key={course.id_curso}>
               <CardHeader>
                 <img
-                  src={course.image}
-                  alt={course.title}
+                  src={capacitacion}
+                  alt={course.nombre_curso}
                   className="w-full h-40 object-cover mb-4 rounded-md"
                 />
-                <CardTitle>{course.title}</CardTitle>
-                <CardDescription>{course.description}</CardDescription>
+                <CardTitle>{course.nombre_curso}</CardTitle>
+                <CardDescription>{course.descripcion_curso}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm mt-2">
-                  Módulos: {course.modules.length} | Lecciones:{" "}
-                  {course.modules.reduce(
-                    (acc, module) => acc + module.lessons.length,
+                {/* <p className="text-sm mt-2">
+                  Módulos: {course.modulos.length} | Lecciones:{" "}
+                  {course.modulos.reduce(
+                    (acc, module) => acc + module.lecciones.length,
                     0
                   )}
-                </p>
+                </p> */}
               </CardContent>
               <CardFooter>
-                <Link to={`vercurso/${course.id}`}>
+                <Link to={`/verCursoUsuario/${course.id_curso}`}>
                   <Button variant="outline">Ver detalles</Button>
                 </Link>
               </CardFooter>

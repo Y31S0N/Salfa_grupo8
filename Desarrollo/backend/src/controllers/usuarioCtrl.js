@@ -50,7 +50,10 @@ export const crearUsuario = async (req, res) => {
         Area: true,
       },
     });
-
+    const nuevoUsuarioFirebase = await auth.createUser({
+      email: correo,
+      password: generarContraseñaAleatoria(),
+    });
     res.status(201).json({
       mensaje: "Usuario creado exitosamente",
       usuario: nuevoUsuario,
@@ -115,163 +118,6 @@ export const obtenerUsuarios = async (req, res) => {
       error: error.message,
     });
   }
-};
-
-export const verificarUsuario = async (req, res) => {
-  const {
-    rut,
-    correo,
-    nombre,
-    apellido_paterno,
-    apellido_materno,
-    rolId,
-    areaId,
-  } = req.body;
-
-  try {
-    const existeRutEnBD = await verificarRutEnBD(rut);
-    const existeCorreoEnBD = await verificarCorreoEnBD(correo);
-    const existeEnFirebase = await verificarEnFirebase(correo);
-
-    // Verificar si el correo ya está asociado a otro RUT
-    if (existeRutEnBD && !existeCorreoEnBD) {
-      return res.status(400).json({
-        accion: "Error",
-        mensaje:
-          "El RUT ya está registrado con otro correo. No se puede crear el usuario.",
-      });
-    }
-
-    // Verificar si el RUT ya está asociado a otro correo
-    if (!existeRutEnBD && existeCorreoEnBD) {
-      return res.status(400).json({
-        accion: "Error",
-        mensaje:
-          "El correo ya está registrado con otro RUT. No se puede crear el usuario.",
-      });
-    }
-
-    if (existeRutEnBD && existeCorreoEnBD && existeEnFirebase) {
-      // Caso 1: El usuario existe en ambos lados (no crear)
-      return res.status(200).json({
-        accion: "No crear",
-        mensaje:
-          "El usuario ya existe tanto en la base de datos como en Firebase.",
-      });
-    }
-
-    if (existeRutEnBD && existeCorreoEnBD && !existeEnFirebase) {
-      // Caso 2: Existe en la BD pero no en Firebase (crear en Firebase)
-      const userRecord = await auth.createUser({
-        email: correo,
-        password: generarContraseñaAleatoria(),
-      });
-      return res.status(200).json({
-        accion: "Creado en Firebase",
-        mensaje:
-          "El usuario ya existía en la base de datos y se ha creado en Firebase.",
-        firebaseUid: userRecord.uid,
-      });
-    }
-
-    if (!existeRutEnBD && !existeCorreoEnBD && !existeEnFirebase) {
-      // Caso 3: No existe en ninguno (crear en ambos)
-      const userRecord = await auth.createUser({
-        email: correo,
-        password: generarContraseñaAleatoria(),
-      });
-      const nuevoUsuario = await prisma.usuario.create({
-        data: {
-          rut,
-          nombre,
-          apellido_paterno,
-          apellido_materno,
-          correo,
-          rolId,
-          areaId,
-        },
-      });
-      return res.status(201).json({
-        accion: "Creado en ambos",
-        mensaje:
-          "El usuario se ha creado tanto en la base de datos como en Firebase.",
-        usuario: nuevoUsuario,
-        firebaseUid: userRecord.uid,
-      });
-    }
-
-    if (!existeRutEnBD && existeCorreoEnBD && existeEnFirebase) {
-      // Caso 4: Existe en Firebase pero no en la base de datos (crear en BD)
-      const nuevoUsuario = await prisma.usuario.create({
-        data: {
-          rut,
-          nombre,
-          apellido_paterno,
-          apellido_materno,
-          correo,
-          rolId,
-          areaId,
-        },
-      });
-      return res.status(201).json({
-        accion: "Creado en la base de datos",
-        mensaje:
-          "El usuario ya existía en Firebase y se ha creado en la base de datos.",
-        usuario: nuevoUsuario,
-      });
-    }
-  } catch (error) {
-    console.error("Error al verificar usuario:", error);
-    return res.status(500).json({
-      accion: "Error",
-      mensaje: "No se pudo determinar la acción a realizar.",
-      error: error.message,
-    });
-  }
-};
-
-// Función para verificar si el rut existe en la base de datos
-const verificarRutEnBD = async (rut) => {
-  try {
-    const usuario = await prisma.usuario.findUnique({
-      where: { rut: rut },
-    });
-    return !!usuario; // Convierte el resultado a booleano
-  } catch (error) {
-    console.error("Error al verificar RUT en la base de datos:", error);
-    return false; // En caso de error, asumimos que el usuario no existe
-  }
-};
-
-// Función para verificar si el correo existe en la base de datos
-const verificarCorreoEnBD = async (correo) => {
-  try {
-    const usuario = await prisma.usuario.findUnique({
-      where: { correo: correo },
-    });
-    return !!usuario; // Convierte el resultado a booleano
-  } catch (error) {
-    console.error("Error al verificar correo en la base de datos:", error);
-    return false; // En caso de error, asumimos que el usuario no existe
-  }
-};
-
-// Función para verificar si el correo existe en Firebase
-const verificarEnFirebase = async (correo) => {
-  try {
-    const userRecord = await auth.getUserByEmail(correo);
-    const existeEnFirebase = !!userRecord;
-    return existeEnFirebase;
-  } catch (error) {
-    // Si el usuario no existe en Firebase
-    const existeEnFirebase = false;
-    return existeEnFirebase;
-  }
-};
-
-// Función auxiliar para generar una contraseña aleatoria
-const generarContraseñaAleatoria = () => {
-  return Math.random().toString(36).slice(-8);
 };
 
 export const login = async (req, res) => {
@@ -345,7 +191,10 @@ export const getUserInfo = async (req, res) => {
 
     const usuario = await prisma.usuario.findUnique({
       where: { correo: userEmail },
-      include: { rol: true },
+      include: {
+        rol: true,
+        Area: true,
+      },
     });
 
     if (!usuario) {
@@ -354,8 +203,12 @@ export const getUserInfo = async (req, res) => {
 
     res.json({
       role: usuario.rol.nombre_rol,
-      status: usuario.status,
-      nombre_usuario: usuario.nombre,
+      rut: usuario.rut,
+      nombre: usuario.nombre,
+      apellido_paterno: usuario.apellido_paterno,
+      apellido_materno: usuario.apellido_materno,
+      area: usuario.Area?.nombre_area,
+      correo: usuario.correo,
     });
   } catch (error) {
     console.error("Error al obtener información del usuario:", error);
@@ -390,4 +243,147 @@ export const toggleEstadoUsuario = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export const actualizarUsuario = async (req, res) => {
+  const rut = req.params.rut; // Obtenemos el RUT de los parámetros de la URL
+  const { nombre, apellido_paterno, apellido_materno, correo, rolId, areaId } =
+    req.body;
+
+  try {
+    // Verificar si existe otro usuario con el mismo correo (excluyendo el usuario actual)
+    const usuarioExistente = await prisma.usuario.findFirst({
+      where: {
+        correo,
+        NOT: { rut: rut },
+      },
+    });
+
+    if (usuarioExistente) {
+      return res
+        .status(400)
+        .json({ mensaje: "El correo ya está en uso por otro usuario" });
+    }
+    const usuarioActual = await prisma.usuario.findUnique({
+      where: { rut: rut },
+    });
+    const usuarioActualizado = await prisma.usuario.update({
+      where: { rut: rut },
+      data: {
+        nombre,
+        apellido_paterno,
+        apellido_materno,
+        correo,
+        rolId,
+        areaId: areaId || undefined,
+      },
+      include: {
+        rol: true,
+        Area: true,
+      },
+    });
+
+    // Actualizar correo en Firebase si cambió
+    try {
+      const userRecord = await auth.getUserByEmail(usuarioActual.correo);
+      await auth.updateUser(userRecord.uid, {
+        email: correo,
+      });
+    } catch (firebaseError) {
+      throw firebaseError;
+    }
+
+    res.json({
+      mensaje: "Usuario actualizado exitosamente",
+      usuario: usuarioActualizado,
+    });
+  } catch (error) {
+    console.error("Error al actualizar usuario:", error);
+    res.status(500).json({
+      mensaje: "Error al actualizar usuario",
+      error: error.message,
+    });
+  }
+};
+
+export const crearUsuariosBulk = async (req, res) => {
+  const { usuarios } = req.body;
+  const resultados = [];
+
+  try {
+    for (const usuario of usuarios) {
+      try {
+        // Verificar si el usuario ya existe
+        const usuarioExistente = await prisma.usuario.findFirst({
+          where: {
+            OR: [{ rut: usuario.rut }, { correo: usuario.correo }],
+          },
+        });
+
+        if (usuarioExistente) {
+          resultados.push({
+            success: false,
+            usuario: usuario,
+            mensaje: `Usuario con RUT ${usuario.rut} o correo ${usuario.correo} ya existe`,
+          });
+          continue;
+        }
+
+        // Crear usuario en la base de datos
+        const nuevoUsuario = await prisma.usuario.create({
+          data: {
+            rut: usuario.rut,
+            nombre: usuario.nombre,
+            apellido_paterno: usuario.apellido_paterno,
+            apellido_materno: usuario.apellido_materno,
+            correo: usuario.correo,
+            rolId: usuario.rolId,
+            areaId: usuario.areaId || undefined,
+          },
+          include: {
+            rol: true,
+            Area: true,
+          },
+        });
+
+        // Crear usuario en Firebase
+        const nuevoUsuarioFirebase = await auth.createUser({
+          email: usuario.correo,
+          password: "prueba12345", //generarContraseñaAleatoria(),
+        });
+
+        resultados.push({
+          success: true,
+          usuario: nuevoUsuario,
+          mensaje: "Usuario creado exitosamente",
+        });
+      } catch (error) {
+        resultados.push({
+          success: false,
+          usuario: usuario,
+          mensaje: `Error al crear usuario: ${error.message}`,
+        });
+      }
+    }
+
+    // Enviar resumen de resultados
+    const exitosos = resultados.filter((r) => r.success).length;
+    const fallidos = resultados.filter((r) => !r.success).length;
+
+    res.status(200).json({
+      mensaje: `Proceso completado. ${exitosos} usuarios creados exitosamente, ${fallidos} fallidos.`,
+      resultados: resultados,
+    });
+  } catch (error) {
+    console.error("Error en la carga masiva:", error);
+    res.status(500).json({
+      mensaje: "Error en el proceso de carga masiva",
+      error: error.message,
+    });
+  }
+};
+
+// Función auxiliar para generar una contraseña aleatoria
+const generarContraseñaAleatoria = () => {
+  return Math.random().toString(36).slice(-8);
 };
