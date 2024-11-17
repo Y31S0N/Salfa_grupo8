@@ -10,17 +10,18 @@ import leccionRouter from "./routes//leccionCurso.routes.js";
 import areaRouter from "./routes/area.routes.js";
 import cursoAreaRouter from "./routes/cursoArea.routes.js";
 import cumplimientoLeccionRouter from "./routes/cumplimientoLeccion.routes.js";
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+import contenidoRouter from "./routes/contenido.routes.js";
+import rolRouter from "./routes/rol.routes.js";
 const app = express();
 
 // Configurar middleware para servir archivos estáticos
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
 // Configuración de la conexión a la base de datos
 const pool = new Pool(dbConfig);
@@ -47,6 +48,8 @@ app.use(leccionRouter);
 app.use(areaRouter);
 app.use(cursoAreaRouter);
 app.use(cumplimientoLeccionRouter);
+app.use(contenidoRouter);
+app.use(rolRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

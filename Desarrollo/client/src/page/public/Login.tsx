@@ -8,7 +8,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useUser();
+  const { login, resetPassword } = useUser();
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,6 +25,27 @@ const Login = () => {
         );
       } else {
         setError("Ocurrió un error inesperado. Por favor, intente de nuevo.");
+      }
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError("Por favor, ingrese su correo electrónico primero");
+      return;
+    }
+
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+      setError("");
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(
+          error.message ||
+            "Error al enviar el correo de recuperación. Por favor, intente de nuevo."
+        );
       }
     }
   };
@@ -77,10 +99,19 @@ const Login = () => {
               >
                 Login
               </button>
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot password?
-              </a>
+              <button
+                onClick={handleForgotPassword}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
             </div>
+            {resetSent && (
+              <p className="text-green-500 text-sm mt-2">
+                Se ha enviado un correo de recuperación. Por favor, revise su
+                bandeja de entrada.
+              </p>
+            )}
           </div>
         </form>
       </div>

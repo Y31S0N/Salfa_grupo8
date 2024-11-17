@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import RutInput from "../../components/rutinput";
 import axios from "axios";
+import api from "../../services/api";
 
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -13,7 +14,22 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 
-const N_usuario = () => {
+interface NuevoUsuarioProps {
+  isModal?: boolean;
+  onClose?: () => void;
+}
+
+interface Area {
+  id_area: number;
+  nombre_area: string;
+}
+
+interface Rol {
+  id_rol: number;
+  nombre_rol: string;
+}
+
+const N_usuario: React.FC<NuevoUsuarioProps> = ({ isModal, onClose }) => {
   const [formData, setFormData] = useState({
     rut: "",
     nombre: "",
@@ -25,6 +41,25 @@ const N_usuario = () => {
   });
 
   const [isRutValid, setIsRutValid] = useState(false);
+  const [areas, setAreas] = useState<Area[]>([]);
+  const [roles, setRoles] = useState<Rol[]>([]);
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const [areasRes, rolesRes] = await Promise.all([
+          api.get("/api/area"),
+          api.get("/api/rol"),
+        ]);
+        setAreas(areasRes.data);
+        setRoles(rolesRes.data);
+      } catch (error) {
+        console.error("Error al cargar áreas y roles:", error);
+      }
+    };
+    cargarDatos();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -54,22 +89,19 @@ const N_usuario = () => {
       alert("Por favor ingresa un RUT válido.");
       return;
     }
-    const { rut, correo } = formData;
-    interface VerificacionUsuarioResponse {
-      accion: string;
-      mensaje: string;
-    }
+
     try {
-      const response = await axios.post<VerificacionUsuarioResponse>(
-        "http://localhost:3000/verificarUsuario",
-        {
-          rut,
-          correo,
-        }
-      );
+      const response = await api.post("/newuser", {
+        rut: formData.rut,
+        nombre: formData.nombre,
+        apellido_paterno: formData.apellido_paterno,
+        apellido_materno: formData.apellido_materno,
+        correo: formData.correo,
+        rolId: parseInt(formData.rol),
+        areaId: parseInt(formData.area),
+      });
 
       const { accion, mensaje } = response.data;
-
       alert(mensaje);
 
       if (accion === "Crear en ambos") {
@@ -83,9 +115,19 @@ const N_usuario = () => {
       } else if (accion === "Error") {
         console.log(mensaje);
       }
+
+      if (isModal && onClose) {
+        onClose();
+      }
     } catch (error) {
       console.error("Ocurrió un error en la verificación", error);
-      alert("Error en la verificación del usuario");
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        alert(
+          "Sesión expirada o inválida. Por favor, inicie sesión nuevamente."
+        );
+      } else {
+        alert("Error en la verificación del usuario");
+      }
     }
   };
 
@@ -146,29 +188,38 @@ const N_usuario = () => {
 
       <div className="space-y-2">
         <Label htmlFor="rol">Rol</Label>
-        <Select onValueChange={(value) => handleSelectChange("rol", value)}>
+        <Select
+          value={formData.rol}
+          onValueChange={(value) => handleSelectChange("rol", value)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Selecciona un rol" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="administracion">Administracion</SelectItem>
-            <SelectItem value="trabajador">trabajador</SelectItem>
-            <SelectItem value="temporal">Temporal</SelectItem>
+            {roles.map((rol) => (
+              <SelectItem key={rol.id_rol} value={String(rol.id_rol)}>
+                {rol.nombre_rol}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="area">Área</Label>
-        <Select onValueChange={(value) => handleSelectChange("area", value)}>
+        <Select
+          value={formData.area}
+          onValueChange={(value) => handleSelectChange("area", value)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Selecciona un área" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="rrhh">Recursos Humanos</SelectItem>
-            <SelectItem value="it">IT</SelectItem>
-            <SelectItem value="ventas">Ventas</SelectItem>
-            <SelectItem value="marketing">Marketing</SelectItem>
+            {areas.map((area) => (
+              <SelectItem key={area.id_area} value={String(area.id_area)}>
+                {area.nombre_area}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

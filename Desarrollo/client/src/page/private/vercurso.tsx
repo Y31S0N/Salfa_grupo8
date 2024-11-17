@@ -174,18 +174,24 @@ export default function Vercurso() {
                         {lecciones[modulo.id_modulo].map((leccion) => (
                           <div
                             key={leccion.id_leccion}
-                            className="flex items-center justify-between"
+                            className="flex items-center justify-between hover:bg-gray-100 cursor-pointer p-2 rounded"
+                            onClick={() =>
+                              navigate(
+                                `/ver_contenido/${curso.id_curso}/${modulo.id_modulo}/${leccion.id_leccion}`
+                              )
+                            }
                           >
                             <span className="mr-2 truncate">
                               • {leccion.nombre_leccion}
                             </span>
                             <Button
                               className="bg-yellow-500 text-white hover:bg-yellow-600 text-xs px-1 mb-2"
-                              onClick={() =>
+                              onClick={(e) => {
+                                e.stopPropagation(); // Evita que el click del botón active la navegación del div padre
                                 navigate(
                                   `/cursos/${id}/modulos/${modulo.id_modulo}/modificar_lecciones/${leccion.id_leccion}`
-                                )
-                              } // Incluye leccion.id_leccion
+                                );
+                              }}
                             >
                               Modificar
                             </Button>

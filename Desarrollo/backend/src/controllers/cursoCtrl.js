@@ -8,6 +8,7 @@ export const crearcursos = async (req, res) => {
       data: req.body,
       include: { modulos: true },
     });
+    console.log(newCurso);
     res.status(201).json(newCurso); // Código 201 para recurso creado
   } catch (error) {
     console.error("Error al crear curso:", error);
@@ -99,11 +100,11 @@ export const obtenerCursosUsuario = async (req, res) => {
       where: {
         cursoAsignados: {
           some: {
-            usuarioId: usuarioId
-          }
+            usuarioId: usuarioId,
+          },
         },
-        estado_curso: true
-      }
+        estado_curso: true,
+      },
     });
     res.json(cursos);
   } catch (error) {
@@ -119,18 +120,18 @@ export const obtenerCursosNoUsuario = async (req, res) => {
       where: {
         cursoAsignados: {
           none: {
-            usuarioId: usuarioId
-          }
+            usuarioId: usuarioId,
+          },
         },
-        estado_curso: true
-      }
+        estado_curso: true,
+      },
     });
     res.json(cursos);
   } catch (error) {
     console.error("Error al obtener cursos por no ID:", error);
     res.status(500).json({ error: "Error al obtener cursos" });
   }
-}
+};
 
 export const obtenerCursoEstructura = async (req, res) => {
   const { id } = req.params;
@@ -157,14 +158,14 @@ export const obtenerCursoEstructura = async (req, res) => {
     console.error("Error al obtener el curso:", error);
     res.status(500).json({ error: "Error al obtener el curso" });
   }
-}
+};
 
 export const obtenerEstadisticasCursos = async (req, res) => {
   try {
     // Obtener todos los cursos activos con información detallada
     const cursosActivos = await prisma.cursoCapacitacion.findMany({
       where: {
-        estado_curso: true
+        estado_curso: true,
       },
       include: {
         cursoAsignados: {
@@ -172,55 +173,62 @@ export const obtenerEstadisticasCursos = async (req, res) => {
             usuario: {
               select: {
                 rut: true,
-                cumplimiento_lecciones: true
-              }
-            }
-          }
+                cumplimiento_lecciones: true,
+              },
+            },
+          },
         },
         modulos: {
           include: {
-            lecciones: true
-          }
-        }
-      }
+            lecciones: true,
+          },
+        },
+      },
     });
 
     // Procesar información de cursos
-    const cursosProcesados = await Promise.all(cursosActivos.map(async (curso) => {
-      const totalLecciones = curso.modulos.reduce(
-        (total, modulo) => total + modulo.lecciones.length, 
-        0
-      );
+    const cursosProcesados = await Promise.all(
+      cursosActivos.map(async (curso) => {
+        const totalLecciones = curso.modulos.reduce(
+          (total, modulo) => total + modulo.lecciones.length,
+          0
+        );
 
-      const usuariosAsignados = curso.cursoAsignados.length;
-      const usuariosCompletados = curso.cursoAsignados.filter(asignacion => {
-        const leccionesCompletadas = asignacion.usuario.cumplimiento_lecciones.filter(
-          cumplimiento => curso.modulos.some(
-            modulo => modulo.lecciones.some(
-              leccion => leccion.id_leccion === cumplimiento.leccionId && 
-                        cumplimiento.estado === true
-            )
-          )
+        const usuariosAsignados = curso.cursoAsignados.length;
+        const usuariosCompletados = curso.cursoAsignados.filter(
+          (asignacion) => {
+            const leccionesCompletadas =
+              asignacion.usuario.cumplimiento_lecciones.filter((cumplimiento) =>
+                curso.modulos.some((modulo) =>
+                  modulo.lecciones.some(
+                    (leccion) =>
+                      leccion.id_leccion === cumplimiento.leccionId &&
+                      cumplimiento.estado === true
+                  )
+                )
+              ).length;
+
+            return leccionesCompletadas === totalLecciones;
+          }
         ).length;
 
-        return leccionesCompletadas === totalLecciones;
-      }).length;
-
-      return {
-        id: curso.id_curso,
-        nombre: curso.nombre_curso,
-        descripcion: curso.descripcion_curso,
-        usuariosAsignados,
-        usuariosCompletados,
-        completado: usuariosAsignados > 0 && usuariosAsignados === usuariosCompletados
-      };
-    }));
+        return {
+          id: curso.id_curso,
+          nombre: curso.nombre_curso,
+          descripcion: curso.descripcion_curso,
+          usuariosAsignados,
+          usuariosCompletados,
+          completado:
+            usuariosAsignados > 0 && usuariosAsignados === usuariosCompletados,
+        };
+      })
+    );
 
     // Obtener total de cursos activos
     const totalCursos = await prisma.cursoCapacitacion.count({
       where: {
-        estado_curso: true
-      }
+        estado_curso: true,
+      },
     });
 
     // Obtener estadísticas por área
@@ -233,91 +241,101 @@ export const obtenerEstadisticasCursos = async (req, res) => {
             cursoAsignados: {
               where: {
                 curso: {
-                  estado_curso: true
-                }
+                  estado_curso: true,
+                },
               },
               include: {
                 curso: {
                   include: {
                     modulos: {
                       include: {
-                        lecciones: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                        lecciones: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     // Procesar estadísticas por área
-    const estadisticasProcesadas = await Promise.all(estadisticasPorArea.map(async (area) => {
-      const cursosAsignadosPorArea = area.usuarios.flatMap(u => u.cursoAsignados);
-      const cursosUnicos = [...new Set(cursosAsignadosPorArea.map(ca => ca.curso.id_curso))];
-      
-      let completados = 0;
-      
-      for (const cursoId of cursosUnicos) {
-        const usuariosConCurso = area.usuarios.filter(u => 
-          u.cursoAsignados.some(ca => ca.curso.id_curso === cursoId)
+    const estadisticasProcesadas = await Promise.all(
+      estadisticasPorArea.map(async (area) => {
+        const cursosAsignadosPorArea = area.usuarios.flatMap(
+          (u) => u.cursoAsignados
         );
-        
-        const todasLecciones = cursosAsignadosPorArea
-          .find(ca => ca.curso.id_curso === cursoId)
-          ?.curso.modulos.flatMap(m => m.lecciones) || [];
+        const cursosUnicos = [
+          ...new Set(cursosAsignadosPorArea.map((ca) => ca.curso.id_curso)),
+        ];
 
-        if (todasLecciones.length === 0) continue;
+        let completados = 0;
 
-        const todosCompletaron = await prisma.cumplimiento_leccion.findMany({
-          where: {
-            leccionId: {
-              in: todasLecciones.map(l => l.id_leccion)
-            },
-            usuarioId: {
-              in: usuariosConCurso.map(u => u.rut)
-            }
-          }
-        });
-
-        const cursoCompletado = usuariosConCurso.every(usuario => {
-          return todasLecciones.every(leccion =>
-            todosCompletaron.some(cumplimiento =>
-              cumplimiento.usuarioId === usuario.rut &&
-              cumplimiento.leccionId === leccion.id_leccion &&
-              cumplimiento.estado === true
-            )
+        for (const cursoId of cursosUnicos) {
+          const usuariosConCurso = area.usuarios.filter((u) =>
+            u.cursoAsignados.some((ca) => ca.curso.id_curso === cursoId)
           );
-        });
 
-        if (cursoCompletado) {
-          completados++;
+          const todasLecciones =
+            cursosAsignadosPorArea
+              .find((ca) => ca.curso.id_curso === cursoId)
+              ?.curso.modulos.flatMap((m) => m.lecciones) || [];
+
+          if (todasLecciones.length === 0) continue;
+
+          const todosCompletaron = await prisma.cumplimiento_leccion.findMany({
+            where: {
+              leccionId: {
+                in: todasLecciones.map((l) => l.id_leccion),
+              },
+              usuarioId: {
+                in: usuariosConCurso.map((u) => u.rut),
+              },
+            },
+          });
+
+          const cursoCompletado = usuariosConCurso.every((usuario) => {
+            return todasLecciones.every((leccion) =>
+              todosCompletaron.some(
+                (cumplimiento) =>
+                  cumplimiento.usuarioId === usuario.rut &&
+                  cumplimiento.leccionId === leccion.id_leccion &&
+                  cumplimiento.estado === true
+              )
+            );
+          });
+
+          if (cursoCompletado) {
+            completados++;
+          }
         }
-      }
 
-      return {
-        name: area.nombre_area,
-        total: cursosUnicos.length,
-        completed: completados
-      };
-    }));
+        return {
+          name: area.nombre_area,
+          total: cursosUnicos.length,
+          completed: completados,
+        };
+      })
+    );
 
-    const totalCompletados = estadisticasProcesadas.reduce((sum, area) => sum + area.completed, 0);
-    const tasaFinalizacion = totalCursos > 0 
-      ? Math.round((totalCompletados / totalCursos) * 100) 
-      : 0;
+    const totalCompletados = estadisticasProcesadas.reduce(
+      (sum, area) => sum + area.completed,
+      0
+    );
+    const tasaFinalizacion =
+      totalCursos > 0 ? Math.round((totalCompletados / totalCursos) * 100) : 0;
 
     res.json({
       total: totalCursos,
       completed: totalCompletados,
       completionRate: tasaFinalizacion,
       byDepartment: estadisticasProcesadas,
-      cursos: cursosProcesados
+      cursos: cursosProcesados,
     });
   } catch (error) {
     console.error("Error al obtener estadísticas:", error);
     res.status(500).json({ error: "Error al obtener estadísticas de cursos" });
   }
-}; 
+};

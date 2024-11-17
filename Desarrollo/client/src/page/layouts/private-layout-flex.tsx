@@ -1,11 +1,20 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Book, Home, LogOut, User, Activity, UserCog, Users } from "lucide-react";
+import {
+  Book,
+  Home,
+  LogOut,
+  User,
+  Activity,
+  UserCog,
+  Users,
+} from "lucide-react";
 import Header from "../../components/header";
 import NavItem from "../../components/nav-home";
 import { Outlet } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import { SyncLoader } from "react-spinners";
 
 export default function PrivateLayout_flex() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -34,7 +43,18 @@ export default function PrivateLayout_flex() {
   };
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <SyncLoader />
+      </div>
+    );
   }
 
   if (!user || !user.role) {
@@ -65,9 +85,15 @@ export default function PrivateLayout_flex() {
       case "Administrador":
         roleSpecificItems = [
           <NavItem
-            key="users"
+            key="leerusers"
             to="/usuarios"
             icon={<UserCog size={20} />}
+            text="Carga de usuarios"
+          />,
+          <NavItem
+            key="user-worker"
+            to="/listarUsuarios"
+            icon={<Activity size={20} />}
             text="Gestión de usuarios"
           />,
         ];
@@ -78,7 +104,19 @@ export default function PrivateLayout_flex() {
             key="activity-user"
             to="/dashboard-rh"
             icon={<User size={20} />}
-            text="Actividad Usuarios"
+            text="Perfil"
+          />,
+          <NavItem
+            key="courses-worker"
+            to="/listado_cursos"
+            icon={<Book size={20} />}
+            text="Cursos"
+          />,
+          <NavItem
+            key="activity-worker"
+            to="/dashboard-rh"
+            icon={<Activity size={20} />}
+            text="Dashboard"
           />,
           <NavItem
             key="area-worker"
@@ -122,7 +160,7 @@ export default function PrivateLayout_flex() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen">
       <Header toggleNav={toggleNav} />
       <div className="flex flex-1 relative">
         <nav
