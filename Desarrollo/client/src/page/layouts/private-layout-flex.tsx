@@ -146,12 +146,12 @@ export default function PrivateLayout_flex() {
             icon={<User size={20} />}
             text="Perfil vista usuario"
           />,
-          <NavItem
-            key="courses-user"
-            to="/listado_cursos_usuario"
-            icon={<Book size={20} />}
-            text="Cursos vista usuario"
-          />,
+          // <NavItem
+          //   key="courses-user"
+          //   to="/listado_cursos_usuario"
+          //   icon={<Book size={20} />}
+          //   text="Cursos vista usuario"
+          // />,
         ];
         break;
     }

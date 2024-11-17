@@ -108,7 +108,7 @@ export default function DetalleUsuarioLecciones() {
     <div className="container mx-auto p-4">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Cursos Asignados a {usuario?.nombre}</CardTitle>
+          <CardTitle>Cursos Asignados a {usuario?.nombre} {usuario?.apellido_paterno} {usuario?.apellido_materno}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 gap-4 text-center">

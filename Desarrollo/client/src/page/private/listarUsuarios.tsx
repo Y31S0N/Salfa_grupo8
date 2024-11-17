@@ -384,7 +384,7 @@ export default function ListadoUsuarios() {
                             size="icon"
                             className="text-blue-500 ml-2"
                             onClick={() =>
-                              navigate(`/dashboard-perfil-rh/${usuario.id}`)
+                              navigate(`/dashboard-perfil-rh/${usuario.rut}`)
                             }
                           >
                             <BarChart2 className="h-4 w-4" />
