@@ -26,7 +26,6 @@ import {
 } from "../../components/ui/card";
 import { Search, UserCheck, UserPen, UserX, Plus } from "lucide-react";
 import { Toaster, toast } from "sonner";
-import { auth } from "../../config/firebase";
 import { getAuth } from "firebase/auth";
 import {
   Dialog,
@@ -384,7 +383,7 @@ export default function ListadoUsuarios() {
                             size="icon"
                             className="text-blue-500 ml-2"
                             onClick={() =>
-                              navigate(`/dashboard-perfil-rh/${usuario.id}`)
+                              navigate(`/dashboard-perfil-rh/${usuario.rut}`)
                             }
                           >
                             <BarChart2 className="h-4 w-4" />

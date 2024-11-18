@@ -339,3 +339,41 @@ export const obtenerEstadisticasCursos = async (req, res) => {
     res.status(500).json({ error: "Error al obtener estadísticas de cursos" });
   }
 };
+
+export const obtenerCursosNoAsignados = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Obtener cursos no asignados al usuario
+        const cursosNoAsignados = await prisma.curso.findMany({
+            where: {
+                NOT: {
+                    cursoAsignados: {
+                        some: {
+                            usuarioId: id
+                        }
+                    }
+                }
+            },
+            include: {
+                modulos: {
+                    include: {
+                        lecciones: {
+                            include: {
+                                Cumplimiento_leccion: {
+                                    where: {
+                                        usuarioId: id
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json(cursosNoAsignados);
+    } catch (error) {
+        console.error("Error al obtener cursos no asignados:", error);
+        res.status(500).json({ error: "Error al obtener cursos" });
+    }
+};

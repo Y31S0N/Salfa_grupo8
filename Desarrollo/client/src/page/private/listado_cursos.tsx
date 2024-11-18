@@ -144,11 +144,13 @@ export default function ListadoCursos() {
             <Card key={curso.id_curso} className="flex flex-col h-full">
               <CardHeader>
                 <div className="relative">
-                  <img 
-                    className="w-full h-48 object-cover rounded-t-lg" 
-                    src={capacitacion} 
-                    alt={curso.nombre_curso} 
-                  />
+                  <Link to={`/vercurso/${curso.id_curso}`}>
+                    <img 
+                      className="w-full h-48 object-cover rounded-t-lg cursor-pointer" 
+                      src={capacitacion} 
+                      alt={curso.nombre_curso} 
+                    />
+                  </Link>
                   <Badge 
                     className={`absolute top-2 right-2 ${
                       curso.estado_curso 
