@@ -11,6 +11,7 @@ import {
   toggleEstadoUsuario,
   actualizarUsuario,
   crearUsuariosBulk,
+  eliminarUsuarios,
 } from "../controllers/usuarioCtrl.js";
 import { verifyToken } from "../middleware/authMiddleware.js";
 
@@ -35,5 +36,6 @@ router.put("/api/usuarios/:rut", verifyToken, actualizarUsuario); //en uso
 router.post("/api/usuarios/bulk", verifyToken, crearUsuariosBulk);
 
 // DELETE
+router.delete("/api/usuarios", verifyToken, eliminarUsuarios);
 
 export default router;

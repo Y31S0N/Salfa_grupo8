@@ -363,76 +363,91 @@ const DetalleCurso = () => {
         </Card>
 
         {/* Módulos */}
-        {curso?.modulos.map((modulo) => (
-          <Card key={modulo.id_modulo} className="p-4">
-            {/* Título del Módulo */}
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => toggleModulo(modulo.id_modulo)}
-            >
-              {expandedModulos[modulo.id_modulo] ? (
-                <ChevronDown className="h-5 w-5" />
-              ) : (
-                <ChevronRight className="h-5 w-5" />
-              )}
-              <FileText className="h-6 w-6" />
-              <h2 className="text-lg font-semibold">{modulo.nombre_modulo}</h2>
-            </div>
+        {curso?.modulos.map(
+          (modulo) =>
+            modulo.estado_modulo && (
+              <Card key={modulo.id_modulo} className="p-4">
+                {/* Título del Módulo */}
+                <div
+                  className="flex items-center gap-3 cursor-pointer"
+                  onClick={() => toggleModulo(modulo.id_modulo)}
+                >
+                  {expandedModulos[modulo.id_modulo] ? (
+                    <ChevronDown className="h-5 w-5" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5" />
+                  )}
+                  <FileText className="h-6 w-6" />
+                  <h2 className="text-lg font-semibold">
+                    {modulo.nombre_modulo}
+                  </h2>
+                </div>
 
-            {/* Lecciones dentro del mismo Card */}
-            {expandedModulos[modulo.id_modulo] &&
-              modulo.lecciones.map((leccion) => (
-                <div key={leccion.id_leccion} className="mt-4 ml-6">
-                  <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => toggleLeccion(leccion.id_leccion)}
-                  >
-                    {expandedLecciones[leccion.id_leccion] ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                    <FileText className="h-5 w-5" />
-                    <h3 className="text-md font-medium">
-                      {leccion.nombre_leccion}
-                    </h3>
-                  </div>
-
-                  {expandedLecciones[leccion.id_leccion] &&
-                    contenidosPorLeccion[leccion.id_leccion]?.map(
-                      (contenido) => (
-                        <div
-                          key={contenido.id_contenido}
-                          className="ml-12 mt-4"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <FileText className="h-4 w-4" />
-                            <span className="font-medium">
-                              {formatFileName(contenido.nombre_archivo)}
-                            </span>
-                            <Button
-                              onClick={() => handleVerContenido(contenido)}
-                              className="ml-2 bg-gray-100 hover:bg-gray-200 text-gray-700"
-                              size="sm"
-                            >
-                              {expandedContent === contenido.id_contenido
-                                ? "Ocultar"
-                                : "Ver"}
-                            </Button>
+                {/* Lecciones dentro del mismo Card */}
+                {expandedModulos[modulo.id_modulo] &&
+                  modulo.lecciones.map((leccion) => {
+                    // Convertir el estado_leccion a booleano
+                    return (
+                      leccion.estado_leccion && (
+                        <div key={leccion.id_leccion} className="mt-4 ml-6">
+                          <div
+                            className="flex items-center gap-3 cursor-pointer"
+                            onClick={() => toggleLeccion(leccion.id_leccion)}
+                          >
+                            {expandedLecciones[leccion.id_leccion] ? (
+                              <ChevronDown className="h-4 w-4" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4" />
+                            )}
+                            <FileText className="h-5 w-5" />
+                            <h3 className="text-md font-medium">
+                              {leccion.nombre_leccion}
+                            </h3>
                           </div>
 
-                          {expandedContent === contenido.id_contenido && (
-                            <div className="mt-2 border-t pt-4">
-                              {renderContenido(contenido)}
-                            </div>
-                          )}
+                          {/* Contenido de la lección */}
+                          {expandedLecciones[leccion.id_leccion] &&
+                            contenidosPorLeccion[leccion.id_leccion]?.map(
+                              (contenido) => (
+                                <div
+                                  key={contenido.id_contenido}
+                                  className="ml-12 mt-4"
+                                >
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <FileText className="h-4 w-4" />
+                                    <span className="font-medium">
+                                      {formatFileName(contenido.nombre_archivo)}
+                                    </span>
+                                    <Button
+                                      onClick={() =>
+                                        handleVerContenido(contenido)
+                                      }
+                                      className="ml-2 bg-gray-100 hover:bg-gray-200 text-gray-700"
+                                      size="sm"
+                                    >
+                                      {expandedContent ===
+                                      contenido.id_contenido
+                                        ? "Ocultar"
+                                        : "Ver"}
+                                    </Button>
+                                  </div>
+
+                                  {expandedContent ===
+                                    contenido.id_contenido && (
+                                    <div className="mt-2 border-t pt-4">
+                                      {renderContenido(contenido)}
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            )}
                         </div>
                       )
-                    )}
-                </div>
-              ))}
-          </Card>
-        ))}
+                    );
+                  })}
+              </Card>
+            )
+        )}
       </div>
     </div>
   );

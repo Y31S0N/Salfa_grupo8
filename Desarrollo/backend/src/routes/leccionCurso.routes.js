@@ -5,6 +5,7 @@ import {
   obtenerLeccion,
   editLeccion,
   deleteLeccion,
+  toggleEstadoLeccion,
 } from "../controllers/leccionCursoCtrl.js";
 
 const router = Router();
@@ -23,5 +24,8 @@ router.put("/modulos/:moduloId/lecciones/:leccionId", editLeccion);
 
 // Endpoint para eliminar una lección específica de un módulo
 router.delete("/modulos/:moduloId/lecciones/:leccionId", deleteLeccion);
+
+// Nueva ruta para cambiar el estado de una lección
+router.put("/lecciones/:leccionId/toggle", toggleEstadoLeccion);
 
 export default router;

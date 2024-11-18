@@ -339,3 +339,70 @@ export const obtenerEstadisticasCursos = async (req, res) => {
     res.status(500).json({ error: "Error al obtener estadísticas de cursos" });
   }
 };
+
+export const cargarImagenesCursos = async (req, res) => {
+  try {
+    const { cursos } = req.body; // Array de IDs de cursos
+    console.log("Cargando imágenes para cursos:", cursos);
+
+    const imagenesCursos = await Promise.all(
+      cursos.map(async (id_curso) => {
+        // Buscar áreas asignadas a este curso
+        const areasDelCurso = await prisma.cursoArea.findMany({
+          where: {
+            id_curso: parseInt(id_curso),
+          },
+          include: {
+            area: {
+              select: {
+                id_area: true,
+                imagen: true,
+              },
+            },
+          },
+        });
+
+        console.log(
+          `Áreas encontradas para curso ${id_curso}:`,
+          areasDelCurso.length
+        );
+
+        // Si hay áreas con imagen, usar la primera
+        const areaConImagen = areasDelCurso.find((ca) => ca.area.imagen);
+
+        if (areaConImagen) {
+          console.log(
+            `Usando imagen del área ${areaConImagen.area.id_area} para curso ${id_curso}`
+          );
+          return {
+            id_curso,
+            tipo: "area",
+            idArea: areaConImagen.area.id_area,
+          };
+        } else {
+          // Si no hay áreas o no tienen imagen, obtener la letra inicial del curso
+          const curso = await prisma.cursoCapacitacion.findUnique({
+            where: { id_curso: parseInt(id_curso) },
+            select: { nombre_curso: true },
+          });
+
+          console.log(
+            `Usando letra inicial para curso ${id_curso}: ${curso.nombre_curso[0]}`
+          );
+          return {
+            id_curso,
+            tipo: "letra",
+            letra: curso.nombre_curso.charAt(0).toUpperCase(),
+          };
+        }
+      })
+    );
+
+    res.json(imagenesCursos);
+  } catch (error) {
+    console.error("Error al cargar imágenes de los cursos:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al obtener las imágenes de los cursos" });
+  }
+};

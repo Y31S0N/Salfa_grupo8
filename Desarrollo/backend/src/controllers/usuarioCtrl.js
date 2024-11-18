@@ -322,9 +322,6 @@ export const usuarioConCursosYLecciones = async (req, res) => {
     if (!usuario) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
-    // for (const c of usuario.curso) {
-    //   console.log(c);
-    // }
 
     return res.json(usuario);
   } catch (error) {
@@ -495,6 +492,81 @@ export const crearUsuariosBulk = async (req, res) => {
     console.error("Error en la carga masiva:", error);
     res.status(500).json({
       mensaje: "Error en el proceso de carga masiva",
+      error: error.message,
+    });
+  }
+};
+
+export const eliminarUsuarios = async (req, res) => {
+  const { usuarios } = req.body;
+  const resultados = [];
+
+  try {
+    for (const rut of usuarios) {
+      try {
+        // Obtener el usuario para conseguir su correo
+        const usuario = await prisma.usuario.findUnique({
+          where: { rut },
+        });
+
+        if (!usuario) {
+          resultados.push({
+            success: false,
+            rut,
+            mensaje: "Usuario no encontrado",
+          });
+          continue;
+        }
+
+        // Intentar eliminar usuario de Firebase
+
+        try {
+          // Primero obtenemos el UID del usuario en Firebase
+          const userRecord = await auth.getUserByEmail(usuario.correo);
+          // Ahora eliminamos usando el UID
+          await auth.deleteUser(userRecord.uid);
+        } catch (firebaseError) {
+          console.log("Error Firebase:", {
+            code: firebaseError.code,
+            message: firebaseError.message,
+            errorCompleto: firebaseError,
+          });
+          // Si el usuario no existe en Firebase, continuamos con la eliminación en la BD
+          if (firebaseError.code !== "auth/user-not-found") {
+            throw firebaseError;
+          }
+        }
+
+        // Eliminar usuario de la base de datos
+        await prisma.usuario.delete({
+          where: { rut },
+        });
+        resultados.push({
+          success: true,
+          rut,
+          mensaje: "Usuario eliminado exitosamente",
+        });
+      } catch (error) {
+        console.error(`Error procesando usuario ${rut}:`, error);
+        resultados.push({
+          success: false,
+          rut,
+          mensaje: `Error al eliminar usuario: ${error.message}`,
+        });
+      }
+    }
+
+    const exitosos = resultados.filter((r) => r.success).length;
+    const fallidos = resultados.filter((r) => !r.success).length;
+
+    res.status(200).json({
+      mensaje: `Proceso completado. ${exitosos} usuarios eliminados exitosamente, ${fallidos} fallidos.`,
+      resultados,
+    });
+  } catch (error) {
+    console.error("Error general en la eliminación de usuarios:", error);
+    res.status(500).json({
+      mensaje: "Error en el proceso de eliminación",
       error: error.message,
     });
   }
