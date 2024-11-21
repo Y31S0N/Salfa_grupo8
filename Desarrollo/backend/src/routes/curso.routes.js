@@ -10,6 +10,7 @@ import {
   obtenerCursosNoUsuario,
   obtenerCursoEstructura,
   obtenerEstadisticasCursos,
+  cargarImagenesCursos,
 } from "../controllers/cursoCtrl.js";
 
 const router = Router();
@@ -23,6 +24,7 @@ router.get("/api/cursos/estadisticas", obtenerEstadisticasCursos);
 
 //POST
 router.post("/cursos", crearcursos);
+router.post("/api/cursos/imagenes", cargarImagenesCursos);
 
 //PUT
 router.put("/cursos/:id", editCurso);

@@ -180,7 +180,11 @@ export const obtenerEstadisticasCursos = async (req, res) => {
         },
         modulos: {
           include: {
-            lecciones: true,
+            lecciones: {
+              where: {
+                estado_leccion: true, // Solo considerar lecciones habilitadas
+              },
+            },
           },
         },
       },
@@ -189,28 +193,35 @@ export const obtenerEstadisticasCursos = async (req, res) => {
     // Procesar información de cursos
     const cursosProcesados = await Promise.all(
       cursosActivos.map(async (curso) => {
+        // Obtener total de lecciones habilitadas
         const totalLecciones = curso.modulos.reduce(
           (total, modulo) => total + modulo.lecciones.length,
           0
         );
 
         const usuariosAsignados = curso.cursoAsignados.length;
-        const usuariosCompletados = curso.cursoAsignados.filter(
-          (asignacion) => {
-            const leccionesCompletadas =
-              asignacion.usuario.cumplimiento_lecciones.filter((cumplimiento) =>
-                curso.modulos.some((modulo) =>
-                  modulo.lecciones.some(
-                    (leccion) =>
-                      leccion.id_leccion === cumplimiento.leccionId &&
-                      cumplimiento.estado === true
-                  )
-                )
-              ).length;
+        let usuariosCompletados = 0;
 
-            return leccionesCompletadas === totalLecciones;
+        // Verificar cada usuario asignado
+        for (const asignacion of curso.cursoAsignados) {
+          const leccionesCompletadasUsuario =
+            asignacion.usuario.cumplimiento_lecciones.filter((cumplimiento) =>
+              curso.modulos.some((modulo) =>
+                modulo.lecciones.some(
+                  (leccion) =>
+                    leccion.id_leccion === cumplimiento.leccionId &&
+                    cumplimiento.estado === true
+                )
+              )
+            ).length;
+
+          if (leccionesCompletadasUsuario === totalLecciones) {
+            usuariosCompletados++;
           }
-        ).length;
+        }
+
+        const cursoCompletado =
+          usuariosAsignados > 0 && usuariosAsignados === usuariosCompletados;
 
         return {
           id: curso.id_curso,
@@ -218,26 +229,27 @@ export const obtenerEstadisticasCursos = async (req, res) => {
           descripcion: curso.descripcion_curso,
           usuariosAsignados,
           usuariosCompletados,
-          completado:
-            usuariosAsignados > 0 && usuariosAsignados === usuariosCompletados,
+          completado: cursoCompletado,
         };
       })
     );
 
-    // Obtener total de cursos activos
-    const totalCursos = await prisma.cursoCapacitacion.count({
-      where: {
-        estado_curso: true,
-      },
-    });
+    // Calcular estadísticas generales
+    const totalCursos = cursosActivos.length;
+    const cursosCompletados = cursosProcesados.filter(
+      (curso) => curso.completado
+    ).length;
+    const tasaFinalizacion =
+      totalCursos > 0 ? (cursosCompletados / totalCursos) * 100 : 0;
 
-    // Obtener estadísticas por área
+    // Procesar estadísticas por área
     const estadisticasPorArea = await prisma.area.findMany({
       select: {
         nombre_area: true,
         usuarios: {
           select: {
             rut: true,
+            cumplimiento_lecciones: true,
             cursoAsignados: {
               where: {
                 curso: {
@@ -249,7 +261,11 @@ export const obtenerEstadisticasCursos = async (req, res) => {
                   include: {
                     modulos: {
                       include: {
-                        lecciones: true,
+                        lecciones: {
+                          where: {
+                            estado_leccion: true,
+                          },
+                        },
                       },
                     },
                   },
@@ -261,81 +277,170 @@ export const obtenerEstadisticasCursos = async (req, res) => {
       },
     });
 
-    // Procesar estadísticas por área
-    const estadisticasProcesadas = await Promise.all(
-      estadisticasPorArea.map(async (area) => {
-        const cursosAsignadosPorArea = area.usuarios.flatMap(
-          (u) => u.cursoAsignados
+    const estadisticasProcesadas = estadisticasPorArea.map((area) => {
+      const cursosDelArea = area.usuarios.flatMap((u) => u.cursoAsignados);
+      const cursosUnicos = [
+        ...new Set(cursosDelArea.map((ca) => ca.curso.id_curso)),
+      ];
+
+      let completados = 0;
+
+      cursosUnicos.forEach((cursoId) => {
+        const curso = cursosDelArea.find(
+          (ca) => ca.curso.id_curso === cursoId
+        )?.curso;
+        if (!curso) return;
+
+        const usuariosConCurso = area.usuarios.filter((u) =>
+          u.cursoAsignados.some((ca) => ca.curso.id_curso === cursoId)
         );
-        const cursosUnicos = [
-          ...new Set(cursosAsignadosPorArea.map((ca) => ca.curso.id_curso)),
-        ];
 
-        let completados = 0;
+        const totalLecciones = curso.modulos.reduce(
+          (total, modulo) => total + modulo.lecciones.length,
+          0
+        );
 
-        for (const cursoId of cursosUnicos) {
-          const usuariosConCurso = area.usuarios.filter((u) =>
-            u.cursoAsignados.some((ca) => ca.curso.id_curso === cursoId)
-          );
-
-          const todasLecciones =
-            cursosAsignadosPorArea
-              .find((ca) => ca.curso.id_curso === cursoId)
-              ?.curso.modulos.flatMap((m) => m.lecciones) || [];
-
-          if (todasLecciones.length === 0) continue;
-
-          const todosCompletaron = await prisma.cumplimiento_leccion.findMany({
-            where: {
-              leccionId: {
-                in: todasLecciones.map((l) => l.id_leccion),
-              },
-              usuarioId: {
-                in: usuariosConCurso.map((u) => u.rut),
-              },
-            },
-          });
-
-          const cursoCompletado = usuariosConCurso.every((usuario) => {
-            return todasLecciones.every((leccion) =>
-              todosCompletaron.some(
-                (cumplimiento) =>
-                  cumplimiento.usuarioId === usuario.rut &&
-                  cumplimiento.leccionId === leccion.id_leccion &&
-                  cumplimiento.estado === true
+        const todosCompletaron = usuariosConCurso.every((usuario) => {
+          const leccionesCompletadas = usuario.cumplimiento_lecciones.filter(
+            (cumplimiento) =>
+              curso.modulos.some((modulo) =>
+                modulo.lecciones.some(
+                  (leccion) =>
+                    leccion.id_leccion === cumplimiento.leccionId &&
+                    cumplimiento.estado === true
+                )
               )
-            );
-          });
+          ).length;
 
-          if (cursoCompletado) {
-            completados++;
-          }
+          return leccionesCompletadas === totalLecciones;
+        });
+
+        if (todosCompletaron) {
+          completados++;
         }
+      });
 
-        return {
-          name: area.nombre_area,
-          total: cursosUnicos.length,
-          completed: completados,
-        };
-      })
-    );
-
-    const totalCompletados = estadisticasProcesadas.reduce(
-      (sum, area) => sum + area.completed,
-      0
-    );
-    const tasaFinalizacion =
-      totalCursos > 0 ? Math.round((totalCompletados / totalCursos) * 100) : 0;
+      return {
+        name: area.nombre_area,
+        total: cursosUnicos.length,
+        completed: completados,
+      };
+    });
 
     res.json({
       total: totalCursos,
-      completed: totalCompletados,
-      completionRate: tasaFinalizacion,
+      completed: cursosCompletados,
+      completionRate: Math.round(tasaFinalizacion),
       byDepartment: estadisticasProcesadas,
       cursos: cursosProcesados,
     });
   } catch (error) {
     console.error("Error al obtener estadísticas:", error);
     res.status(500).json({ error: "Error al obtener estadísticas de cursos" });
+  }
+};
+
+export const cargarImagenesCursos = async (req, res) => {
+  try {
+    const { cursos } = req.body; // Array de IDs de cursos
+    console.log("Cargando imágenes para cursos:", cursos);
+
+    const imagenesCursos = await Promise.all(
+      cursos.map(async (id_curso) => {
+        // Buscar áreas asignadas a este curso
+        const areasDelCurso = await prisma.cursoArea.findMany({
+          where: {
+            id_curso: parseInt(id_curso),
+          },
+          include: {
+            area: {
+              select: {
+                id_area: true,
+                imagen: true,
+              },
+            },
+          },
+        });
+
+        console.log(
+          `Áreas encontradas para curso ${id_curso}:`,
+          areasDelCurso.length
+        );
+
+        // Si hay áreas con imagen, usar la primera
+        const areaConImagen = areasDelCurso.find((ca) => ca.area.imagen);
+
+        if (areaConImagen) {
+          console.log(
+            `Usando imagen del área ${areaConImagen.area.id_area} para curso ${id_curso}`
+          );
+          return {
+            id_curso,
+            tipo: "area",
+            idArea: areaConImagen.area.id_area,
+          };
+        } else {
+          // Si no hay áreas o no tienen imagen, obtener la letra inicial del curso
+          const curso = await prisma.cursoCapacitacion.findUnique({
+            where: { id_curso: parseInt(id_curso) },
+            select: { nombre_curso: true },
+          });
+
+          console.log(
+            `Usando letra inicial para curso ${id_curso}: ${curso.nombre_curso[0]}`
+          );
+          return {
+            id_curso,
+            tipo: "letra",
+            letra: curso.nombre_curso.charAt(0).toUpperCase(),
+          };
+        }
+      })
+    );
+
+    res.json(imagenesCursos);
+  } catch (error) {
+    console.error("Error al cargar imágenes de los cursos:", error);
+    res
+      .status(500)
+      .json({ mensaje: "Error al obtener las imágenes de los cursos" });
+  }
+};
+
+export const obtenerCursosNoAsignados = async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Obtener cursos no asignados al usuario
+    const cursosNoAsignados = await prisma.curso.findMany({
+      where: {
+        NOT: {
+          cursoAsignados: {
+            some: {
+              usuarioId: id,
+            },
+          },
+        },
+      },
+      include: {
+        modulos: {
+          include: {
+            lecciones: {
+              include: {
+                Cumplimiento_leccion: {
+                  where: {
+                    usuarioId: id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.json(cursosNoAsignados);
+  } catch (error) {
+    console.error("Error al obtener cursos no asignados:", error);
+    res.status(500).json({ error: "Error al obtener cursos" });
   }
 };

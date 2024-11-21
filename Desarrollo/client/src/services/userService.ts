@@ -11,5 +11,12 @@ export const userService = {
     return response.data;
   },
 
+  deleteUsers: async (ruts: string[]) => {
+    const response = await api.delete("/api/usuarios", {
+      data: { usuarios: ruts },
+    });
+    return response.data;
+  },
+
   // ... otros métodos
 };

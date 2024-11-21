@@ -1,103 +1,247 @@
 import React, { useEffect, useState } from "react";
 import capacitaciones from "@/assets/capacitacion.png";
-import mantenimiento from "@/assets/mantenimiento.png";
-import seguridad from "@/assets/seguridad.png";
 import { Link } from "react-router-dom";
 import { Button } from '../../components/ui/button'
 import { Toaster, toast } from 'sonner';
 import { useUser } from "../../contexts/UserContext";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "../../components/ui/card"
-import { SearchBar } from "../../components/ui/barra_busqueda";
+import { Search, LayoutGrid, LayoutList } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-
-interface CardProps {
-    name: string;
-    image: string;
-}
 interface Curso {
     id_curso: number;
     nombre_curso: string;
     descripcion_curso: string;
     estado_curso: boolean;
     fecha_limite: string;
+    completado?: boolean;
 }
-// function CourseCard({ name, image }: CardProps) {
-//     return (
-//         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-//             <img src={image} alt={name} className="w-full h-32 object-cover" />
-//             <div className="p-4">
-//                 <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
-//             </div>
-//         </div>
-//     );
-// }
 
 const HomeUsuarios = () => {
     const { user } = useUser();
     const [cursos, setCursos] = useState<Curso[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filterStatus, setFilterStatus] = useState("todos");
+    const [view, setView] = useState<"list" | "grid">("grid");
 
-    const fetchCursos = async (userRut) => {
+    const fetchCursos = async (userRut: string) => {
         try {
-            const response = await fetch(`http://localhost:3000/api/cursosNoUsuario/${userRut}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`)
+            // Primero obtenemos los cursos no asignados
+            const responseNoAsignados = await fetch(`http://localhost:3000/api/cursosNoUsuario/${userRut}`);
+            if (!responseNoAsignados.ok) {
+                throw new Error(`HTTP error! status: ${responseNoAsignados.status}`);
             }
-            const data = await response.json();
-            setCursos(data);
+            const cursosNoAsignados = await responseNoAsignados.json();
+
+            // Luego obtenemos los cursos asignados con su progreso
+            const responseAsignados = await fetch(`http://localhost:3000/api/usuarioLecciones/${userRut}`);
+            if (!responseAsignados.ok) {
+                throw new Error(`HTTP error! status: ${responseAsignados.status}`);
+            }
+            const usuarioData = await responseAsignados.json();
+            
+            // Procesamos los cursos asignados para obtener el estado de completado
+            const cursosAsignados = usuarioData.cursoAsignados?.map(ca => ({
+                ...ca.curso,
+                completado: calcularCompletado(ca.curso)
+            })) || [];
+
+            // Combinamos ambos arrays
+            const todosCursos = [
+                ...cursosNoAsignados.map(c => ({ ...c, completado: false })),
+                ...cursosAsignados
+            ];
+
+            setCursos(todosCursos);
         } catch (error) {
             console.error("Error al obtener los cursos:", error);
-            toast("Error al cargar los cursos");
+            toast.error("Error al cargar los cursos");
         }
+    };
+
+    const calcularCompletado = (curso) => {
+        if (!curso.modulos) return false;
+        
+        const todasLasLecciones = curso.modulos.flatMap(modulo => modulo.lecciones);
+        if (todasLasLecciones.length === 0) return false;
+
+        const leccionesCompletadas = todasLasLecciones.filter(leccion => 
+            leccion.Cumplimiento_leccion && 
+            leccion.Cumplimiento_leccion.length > 0 && 
+            leccion.Cumplimiento_leccion[0].estado
+        ).length;
+
+        return leccionesCompletadas === todasLasLecciones.length;
     };
 
     useEffect(() => {
         if (user?.rut) {
             fetchCursos(user.rut);
         }
-    }, [user?.rut])
-    return (
-        <>
-            <Toaster />
-            <h2 className="text-3xl font-bold mb-4 text-center">Cursos Disponibles</h2>
-            {/* <SearchBar onSearch={handleSearch} setFilter={setFilter} /> */}
-            {/* <h2 className="text-3xl font-semibold text-gray-800">
-                    Cursos Disponibles
-                </h2> */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {cursos.map((curso) => (
-                    <Card key={curso.id_curso}>
-                        <CardHeader>
-                            <img
-                                src={capacitaciones}
-                                alt={curso.nombre_curso}
-                                className="w-full h-40 object-cover rounded-md"
-                            />
-                            <CardTitle className="pt-3 pb-1">{curso.nombre_curso}</CardTitle>
-                            <CardDescription>{curso.descripcion_curso}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            {/* <CardDescription
-                                className="mb-3 overflow-hidden text-ellipsis line-clamp-3"
-                                style={{
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 3,
-                                    WebkitBoxOrient: 'vertical',
-                                }}
-                            >
-                                {curso.descripcion_curso}
-                            </CardDescription> */}
-                            {/* Otros contenidos */}
-                        </CardContent>
-                        <CardFooter>
-                            <Link to={`/verCursoUsuario/${curso.id_curso}`}>
-                                <Button variant="outline">Ver Detalles</Button>
-                            </Link>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
+    }, [user?.rut]);
 
-        </>
+    // Filtrar cursos basado en búsqueda y estado
+    const filteredCursos = cursos.filter(curso => {
+        const matchesSearch = curso.nombre_curso
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase());
+        
+        const matchesStatus = filterStatus === "todos" 
+            ? true 
+            : filterStatus === "completados" 
+                ? curso.completado 
+                : !curso.completado;
+
+        return matchesSearch && matchesStatus;
+    });
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <Toaster />
+            <div className="container mx-auto px-4 py-8">
+                <div className="mb-8">
+                    <h2 className="text-3xl font-bold text-gray-900 text-center mb-6">
+                        Cursos Disponibles
+                    </h2>
+                    
+                    <div className="max-w-2xl mx-auto mb-8">
+                        <div className="flex gap-4 items-center">
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Search className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar cursos..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition-all duration-200"
+                                />
+                            </div>
+
+                            <Select
+                                value={filterStatus}
+                                onValueChange={setFilterStatus}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Filtrar por estado" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="todos">Todos los cursos</SelectItem>
+                                    <SelectItem value="completados">Completados</SelectItem>
+                                    <SelectItem value="pendientes">No completados</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end mb-4">
+                        <div className="space-x-2">
+                            <Button
+                                variant={view === "list" ? "default" : "outline"}
+                                onClick={() => setView("list")}
+                                size="sm"
+                            >
+                                <LayoutList className="h-4 w-4 mr-2" />
+                                Lista
+                            </Button>
+                            <Button
+                                variant={view === "grid" ? "default" : "outline"}
+                                onClick={() => setView("grid")}
+                                size="sm"
+                            >
+                                <LayoutGrid className="h-4 w-4 mr-2" />
+                                Cuadrícula
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className={`
+                        ${view === "grid" 
+                            ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
+                            : "space-y-4"
+                        }
+                    `}>
+                        {filteredCursos.length > 0 ? (
+                            filteredCursos.map((curso) => (
+                                <Card 
+                                    key={curso.id_curso} 
+                                    className={`
+                                        transition-all duration-200 hover:shadow-lg
+                                        ${view === "list" 
+                                            ? "flex flex-row items-start" 
+                                            : "flex flex-col hover:scale-[1.02]"
+                                        }
+                                    `}
+                                >
+                                    <CardHeader className={`
+                                        ${view === "list" ? "w-1/4" : "p-0"}
+                                    `}>
+                                        <img
+                                            src={capacitaciones}
+                                            alt={curso.nombre_curso}
+                                            className={`
+                                                object-cover rounded-t-lg
+                                                ${view === "grid" 
+                                                    ? "w-full h-48" 
+                                                    : "h-full w-full rounded-l-lg rounded-t-none"
+                                                }
+                                            `}
+                                        />
+                                    </CardHeader>
+                                    <div className={`
+                                        flex flex-col flex-1
+                                        ${view === "list" ? "p-6" : "p-4"}
+                                    `}>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <CardTitle className="text-xl font-bold">
+                                                {curso.nombre_curso}
+                                            </CardTitle>
+                                            {curso.completado && (
+                                                <span className="px-2 py-1 bg-green-100 text-green-600 text-xs font-medium rounded-full">
+                                                    Completado
+                                                </span>
+                                            )}
+                                        </div>
+                                        <CardDescription className="text-gray-600 mb-4">
+                                            {curso.descripcion_curso}
+                                        </CardDescription>
+                                        <div className="mt-auto">
+                                            <p className="text-sm text-gray-500 mb-4">
+                                                Fecha límite: {new Date(curso.fecha_limite).toLocaleDateString()}
+                                            </p>
+                                            <Link to={`/verCursoUsuario/${curso.id_curso}`} className="w-full">
+                                                <Button 
+                                                    variant="outline" 
+                                                    className="w-full hover:bg-primary hover:text-white transition-colors"
+                                                >
+                                                    Ver Detalles
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center text-gray-500 py-8">
+                                No se encontraron cursos que coincidan con los criterios de búsqueda
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
+
 export default HomeUsuarios;

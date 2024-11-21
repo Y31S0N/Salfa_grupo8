@@ -44,6 +44,7 @@ const UsuariosAdmin = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    console.log("hola");
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {

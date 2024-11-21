@@ -5,6 +5,7 @@ import {
   obtenerMobulo,
   editMobulo,
   deleteMobulo,
+  actualizarModulo,
 } from "../controllers/moduloCtrl.js";
 
 const router = Router();
@@ -21,6 +22,9 @@ router.post("/cursos/:id/modulos", crearModulo);
 //PUT
 // Endpoint para modificar un módulo existente
 router.put("/cursos/:cursoId/modulos/:moduloId", editMobulo);
+
+//PUT
+router.put("/modulos/:moduloId", actualizarModulo);
 
 //DELETE
 // Endpoint para eliminar un módulo específico de un curso

@@ -8,6 +8,8 @@ import {
   Activity,
   UserCog,
   Users,
+  ChartArea,
+  HardHat,
 } from "lucide-react";
 import Header from "../../components/header";
 import NavItem from "../../components/nav-home";
@@ -32,13 +34,12 @@ export default function PrivateLayout_flex() {
   const handleClickSignOut = async (
     event: React.MouseEvent<HTMLAnchorElement>
   ) => {
-    event.preventDefault(); // Previene la navegación por defecto
+    event.preventDefault();
     try {
-      await logout(); // Espera a que logout termine
-      navigate("/login"); // Navega programáticamente después del logout
+      await logout();
+      navigate("/login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      // Aquí podrías mostrar un mensaje de error al usuario
     }
   };
 
@@ -101,12 +102,6 @@ export default function PrivateLayout_flex() {
       case "Trabajador":
         roleSpecificItems = [
           <NavItem
-            key="activity-user"
-            to="/dashboard-rh"
-            icon={<User size={20} />}
-            text="Perfil"
-          />,
-          <NavItem
             key="courses-worker"
             to="/listado_cursos"
             icon={<Book size={20} />}
@@ -115,13 +110,13 @@ export default function PrivateLayout_flex() {
           <NavItem
             key="activity-worker"
             to="/dashboard-rh"
-            icon={<Activity size={20} />}
+            icon={<ChartArea size={20} />}
             text="Dashboard"
           />,
           <NavItem
             key="area-worker"
             to="/listarAreas"
-            icon={<Activity size={20} />}
+            icon={<HardHat size={20} />}
             text="Áreas"
           />,
           <NavItem
@@ -130,12 +125,6 @@ export default function PrivateLayout_flex() {
             icon={<Users size={20} />}
             text="Listado Usuarios"
           />,
-          // <NavItem
-          //   key="activity-user"
-          //   to="/dashboard-perfil-rh"
-          //   icon={<Activity size={20} />}
-          //   text="Actividad vista usuario"
-          // />,
         ];
         break;
       case "Usuario":
@@ -144,14 +133,8 @@ export default function PrivateLayout_flex() {
             key="profile-user"
             to="/perfilUsuario"
             icon={<User size={20} />}
-            text="Perfil vista usuario"
+            text="Mi Perfil"
           />,
-          // <NavItem
-          //   key="courses-user"
-          //   to="/listado_cursos_usuario"
-          //   icon={<Book size={20} />}
-          //   text="Cursos vista usuario"
-          // />,
         ];
         break;
     }
