@@ -326,16 +326,17 @@ export default function ListadoUsuarios() {
               </SelectContent>
             </Select>
 
-            {user.role.toLowerCase() === "administrador" && (
-              <Button
-                onClick={() => setShowModal(true)}
-                variant="default"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nuevo Usuario
-              </Button>
-            )}
+            {user.role.toLowerCase() === "administrador" ||
+              (user.role.toLowerCase() === "trabajador" && (
+                <Button
+                  onClick={() => setShowModal(true)}
+                  variant="default"
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Nuevo Usuario
+                </Button>
+              ))}
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
               <DialogContent className="max-w-4xl">
@@ -407,7 +408,7 @@ export default function ListadoUsuarios() {
                     </TableCell>
                     <TableCell>
                       {user.role.toLowerCase() === "administrador" ||
-                      "trabajador" ? (
+                      user.role.toLowerCase() === "trabajador" ? (
                         <>
                           <EditarUsuario
                             usuario={usuario}

@@ -423,7 +423,7 @@ export const actualizarUsuario = async (req, res) => {
 export const crearUsuariosBulk = async (req, res) => {
   const { usuarios } = req.body;
   const resultados = [];
-
+  console.log(usuarios);
   try {
     for (const usuario of usuarios) {
       try {
@@ -466,6 +466,7 @@ export const crearUsuariosBulk = async (req, res) => {
           password: "prueba12345", //generarContraseñaAleatoria(),
         });
 
+        console.log(nuevoUsuarioFirebase0);
         resultados.push({
           success: true,
           usuario: nuevoUsuario,
@@ -483,7 +484,8 @@ export const crearUsuariosBulk = async (req, res) => {
     // Enviar resumen de resultados
     const exitosos = resultados.filter((r) => r.success).length;
     const fallidos = resultados.filter((r) => !r.success).length;
-
+    console.log(exitosos);
+    console.log(fallidos);
     res.status(200).json({
       mensaje: `Proceso completado. ${exitosos} usuarios creados exitosamente, ${fallidos} fallidos.`,
       resultados: resultados,
