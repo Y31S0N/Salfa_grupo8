@@ -1,11 +1,22 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Book, Home, LogOut, User, Activity, UserCog } from "lucide-react";
+import {
+  Book,
+  Home,
+  LogOut,
+  User,
+  Activity,
+  UserCog,
+  Users,
+  ChartArea,
+  HardHat,
+} from "lucide-react";
 import Header from "../../components/header";
 import NavItem from "../../components/nav-home";
 import { Outlet } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import { SyncLoader } from "react-spinners";
 
 export default function PrivateLayout_flex() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -17,24 +28,34 @@ export default function PrivateLayout_flex() {
       navigate("/login");
     }
   }, [user, loading, navigate]);
-
+  
   const toggleNav = () => setIsNavOpen(!isNavOpen);
 
   const handleClickSignOut = async (
     event: React.MouseEvent<HTMLAnchorElement>
   ) => {
-    event.preventDefault(); // Previene la navegación por defecto
+    event.preventDefault();
     try {
-      await logout(); // Espera a que logout termine
-      navigate("/login"); // Navega programáticamente después del logout
+      await logout();
+      navigate("/login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      // Aquí podrías mostrar un mensaje de error al usuario
     }
   };
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <SyncLoader />
+      </div>
+    );
   }
 
   if (!user || !user.role) {
@@ -65,9 +86,15 @@ export default function PrivateLayout_flex() {
       case "Administrador":
         roleSpecificItems = [
           <NavItem
-            key="users"
+            key="leerusers"
             to="/usuarios"
             icon={<UserCog size={20} />}
+            text="Carga de usuarios"
+          />,
+          <NavItem
+            key="user-worker"
+            to="/listarUsuarios"
+            icon={<Activity size={20} />}
             text="Gestión de usuarios"
           />,
         ];
@@ -75,47 +102,29 @@ export default function PrivateLayout_flex() {
       case "Trabajador":
         roleSpecificItems = [
           <NavItem
-            key="profile-worker"
-            to="/perfil"
-            icon={<User size={20} />}
-            text="Perfil vista trabajador"
-          />,
-          <NavItem
             key="courses-worker"
             to="/listado_cursos"
             icon={<Book size={20} />}
-            text="Cursos vista trabajador"
+            text="Cursos"
           />,
           <NavItem
             key="activity-worker"
             to="/dashboard-rh"
-            icon={<Activity size={20} />}
-            text="Actividad vista trabajador 1"
-          />,
-          <NavItem
-            key="courses-admin"
-            to="/listado_cursos"
-            icon={<Book size={20} />}
-            text="Cursos vista trabajador"
-          />,
-          <NavItem
-            key="activity-admin"
-            to="/dashboard-rh"
-            icon={<Activity size={20} />}
-            text="Actividad vista trabajador 2"
+            icon={<ChartArea size={20} />}
+            text="Dashboard"
           />,
           <NavItem
             key="area-worker"
             to="/listarAreas"
-            icon={<Activity size={20} />}
-            text="Áreas vista trabajador"
+            icon={<HardHat size={20} />}
+            text="Áreas"
           />,
           <NavItem
             key="user-worker"
             to="/listarUsuarios"
-            icon={<Activity size={20} />}
-            text="Usuarios vista trabajador"
-          />,
+            icon={<Users size={20} />}
+            text="Listado Usuarios"
+          />
         ];
         break;
       case "Usuario":
@@ -124,19 +133,7 @@ export default function PrivateLayout_flex() {
             key="profile-user"
             to="/perfilUsuario"
             icon={<User size={20} />}
-            text="Perfil vista usuario"
-          />,
-          <NavItem
-            key="courses-user"
-            to="/listado_cursos_usuario"
-            icon={<Book size={20} />}
-            text="Cursos vista usuario"
-          />,
-          <NavItem
-            key="activity-user"
-            to="/dashboard-perfil-rh"
-            icon={<Activity size={20} />}
-            text="Actividad vista usuario"
+            text="Mi Perfil"
           />,
         ];
         break;
@@ -146,7 +143,7 @@ export default function PrivateLayout_flex() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen">
       <Header toggleNav={toggleNav} />
       <div className="flex flex-1 relative">
         <nav
