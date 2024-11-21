@@ -196,3 +196,61 @@ export const deleteLeccion = async (req, res) => {
     res.status(500).json({ error: "Error al eliminar la lección" });
   }
 };
+
+export const toggleEstadoLeccion = async (req, res) => {
+  try {
+    const { leccionId } = req.params;
+    const { estado_leccion } = req.body;
+
+    // Verificar si la lección existe
+    const leccion = await prisma.leccionCurso.findUnique({
+      where: {
+        id_leccion: parseInt(leccionId),
+      },
+    });
+
+    if (!leccion) {
+      return res.status(404).json({
+        error: "No se encontró ninguna lección con ese ID",
+      });
+    }
+
+    // Actualizar el estado de la lección
+    const leccionActualizada = await prisma.leccionCurso.update({
+      where: {
+        id_leccion: parseInt(leccionId),
+      },
+      data: {
+        estado_leccion: estado_leccion,
+      },
+    });
+
+    // Resetear el estado de cumplimiento para todos los usuarios que tenían la lección completada
+    if (!estado_leccion) {
+      await prisma.cumplimiento_leccion.updateMany({
+        where: {
+          leccionId: parseInt(leccionId),
+          estado: true, // Solo actualizar los que estaban marcados como completados
+        },
+        data: {
+          estado: false,
+          fecha_modificacion_estado: null,
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: leccionActualizada,
+      message: `Lección ${
+        estado_leccion ? "habilitada" : "deshabilitada"
+      } correctamente`,
+    });
+  } catch (error) {
+    console.error("Error al cambiar el estado de la lección:", error);
+    res.status(500).json({
+      error: "Error al cambiar el estado de la lección",
+      details: error.message,
+    });
+  }
+};

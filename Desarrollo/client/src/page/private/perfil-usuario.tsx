@@ -1,96 +1,65 @@
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../components/ui/avatar";
-import { Mail, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+import { Progress } from "../../components/ui/progress";
+import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { useUser } from "../../contexts/UserContext";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
+import { Mail } from "lucide-react";
 
-import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
-// import { Progress } from "@/components/ui/progress";
-import { LayoutList, LayoutGrid } from "lucide-react";
+interface Cumplimiento_leccion {
+  usuarioId: string;
+  leccionId: number;
+  fecha_modificacion_estado: Date;
+  estado: boolean;
+}
 
-// IMÁGENES
-import capacitacion from "../../assets/capacitacion.png";
-import mantenimiento from "../../assets/mantenimiento.png";
-import seguridad from "../../assets/seguridad.png";
+interface Leccion {
+  id_leccion: number;
+  nombre_leccion: string;
+  descripcion_leccion: string;
+  estado_leccion: boolean;
+  Cumplimiento_leccion: Cumplimiento_leccion[];
+}
 
-const worker = {
-  name: "José Barra",
-  position: "Ingeniero de Mantenimiento",
-  email: "jo.barra@salfamantenciones.com",
-  // phone: "+569",
-  location: "Talca, Chile",
-  avatar: "/placeholder.svg?height=100&width=100",
-};
-
-type Leccion = {
-  id: number;
-  title: string;
-  completed: boolean;
-};
-
-type Modulo = {
-  id: number;
-  title: string;
+interface Modulo {
+  id_modulo: number;
+  nombre_modulo: string;
   lecciones: Leccion[];
-};
+}
 
-type Curso = {
+interface Curso {
   id_curso: number;
   nombre_curso: string;
   descripcion_curso: string;
-  fecha_limite: string;
   modulos: Modulo[];
-};
+}
 
-import { useUser } from "../../contexts/UserContext";
+interface Usuario {
+  rut: string;
+  nombre: string;
+  apellido_paterno: string;
+  apellido_materno: string;
+  cursoAsignados: {
+    fecha_asignacion: string;
+    curso: Curso;
+  }[];
+}
 
-export default function PerfilUsuario({}) {
-  const [filter, setFilter] = useState<"all" | "completed" | "incomplete">(
-    "all"
-  );
-
+export default function PerfilUsuario() {
   const { user } = useUser();
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
 
-  const [view, setView] = useState<"list" | "grid">("grid");
-  const [isLoading, setIsLoading] = useState(true);
-  const [cursos, setCursos] = useState<Curso[]>([]);
-
-  // CARGA DE USUARIOS Y CURSOS
-  const cargarCursos = async (userRut) => {
-    setIsLoading(true);
+  const cargarCursos = async (userRut: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/cursosUsuario/${userRut}`
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const response = await fetch(`http://localhost:3000/api/usuarioLecciones/${userRut}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      data.sort((a, b) => a.nombre_curso.localeCompare(b.nombre_curso));
-      setCursos(data);
+      setUsuario(data);
     } catch (error) {
       console.error("Error al cargar cursos:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -100,19 +69,6 @@ export default function PerfilUsuario({}) {
     }
   }, [user?.rut]);
 
-  const isCourseCompleted = (course: Curso) => {
-    return course.modulos.every((modulo) =>
-      modulo.lecciones.every((lesson) => lesson.completed)
-    );
-  };
-
-  const filteredCourses = cursos.filter((course) => {
-    // if (filter === "all") return true;
-    // // if (filter === "completed") return isCourseCompleted(course);
-    // // if (filter === "incomplete") return !isCourseCompleted(course);
-    return true;
-  });
-
   return (
     <>
       <Card className="mb-8">
@@ -120,19 +76,13 @@ export default function PerfilUsuario({}) {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <Avatar className="w-24 h-24">
               <AvatarImage src={user?.nombre} alt={user?.nombre} />
-              <AvatarImage src={user?.nombre} alt={user?.nombre} />
               <AvatarFallback>
-                {((user?.nombre || "") + (user?.apellido_paterno || ""))
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
+                {`${user?.nombre?.charAt(0) || ""}${user?.apellido_paterno?.charAt(0) || ""}`}
               </AvatarFallback>
             </Avatar>
             <div className="text-center md:text-left">
               <h1 className="text-2xl font-bold">
-                {user?.nombre || ""} {user?.apellido_paterno || ""}{" "}
-                {user?.apellido_materno || ""}
+                {user?.nombre} {user?.apellido_paterno} {user?.apellido_materno}
               </h1>
               <p className="text-muted-foreground">{user?.area}</p>
               <div className="mt-4 space-y-2">
@@ -147,90 +97,123 @@ export default function PerfilUsuario({}) {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Cursos Completados
-          </CardTitle>
-          <CardTitle></CardTitle>
-        </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {/* {coursesData.filter(isCourseCompleted).length}/{coursesData.length} PINTADO */}
-          </div>
+          <Tabs defaultValue="todos">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="todos">Todos</TabsTrigger>
+              <TabsTrigger value="completadas">Completados</TabsTrigger>
+              <TabsTrigger value="en_progreso">En Progreso</TabsTrigger>
+              <TabsTrigger value="no_iniciadas">No Iniciados</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="todos">
+              <ListaCursosFiltrados cursos={usuario?.cursoAsignados?.map(ca => ca.curso) || []} filtro="todos" />
+            </TabsContent>
+            <TabsContent value="completadas">
+              <ListaCursosFiltrados cursos={usuario?.cursoAsignados?.map(ca => ca.curso) || []} filtro="completadas" />
+            </TabsContent>
+            <TabsContent value="en_progreso">
+              <ListaCursosFiltrados cursos={usuario?.cursoAsignados?.map(ca => ca.curso) || []} filtro="en_progreso" />
+            </TabsContent>
+            <TabsContent value="no_iniciadas">
+              <ListaCursosFiltrados cursos={usuario?.cursoAsignados?.map(ca => ca.curso) || []} filtro="no_iniciadas" />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
-
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Mis Cursos</h1>
-
-        <div className="flex justify-between items-center mb-4">
-          <Select
-            onValueChange={(value: "all" | "completed" | "incomplete") =>
-              setFilter(value)
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar cursos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los cursos</SelectItem>
-              <SelectItem value="completed">Completados</SelectItem>
-              <SelectItem value="incomplete">No completados</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="space-x-2">
-            <Button
-              variant={view === "list" ? "default" : "outline"}
-              onClick={() => setView("list")}
-            >
-              <LayoutList className="h-4 w-4 mr-2" />
-              Lista
-            </Button>
-            <Button
-              variant={view === "grid" ? "default" : "outline"}
-              onClick={() => setView("grid")}
-            >
-              <LayoutGrid className="h-4 w-4 mr-2" />
-              Cuadrícula
-            </Button>
-          </div>
-        </div>
-
-        <div
-          className={`grid gap-4 ${
-            view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
-          }`}
-        >
-          {cursos.map((course) => (
-            <Card key={course.id_curso}>
-              <CardHeader>
-                <img
-                  src={capacitacion}
-                  alt={course.nombre_curso}
-                  className="w-full h-40 object-cover mb-4 rounded-md"
-                />
-                <CardTitle>{course.nombre_curso}</CardTitle>
-                <CardDescription>{course.descripcion_curso}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* <p className="text-sm mt-2">
-                  Módulos: {course.modulos.length} | Lecciones:{" "}
-                  {course.modulos.reduce(
-                    (acc, module) => acc + module.lecciones.length,
-                    0
-                  )}
-                </p> */}
-              </CardContent>
-              <CardFooter>
-                <Link to={`/verCursoUsuario/${course.id_curso}`}>
-                  <Button variant="outline">Ver detalles</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
     </>
   );
+}
+
+function ListaCursosFiltrados({ cursos, filtro }: { cursos: Curso[]; filtro: string }) {
+  const calcularProgresoCurso = (curso: Curso) => {
+    try {
+      const todasLasLecciones = curso.modulos.flatMap(modulo => modulo.lecciones);
+      const totalLecciones = todasLasLecciones.length;
+      const leccionesCompletadas = todasLasLecciones.filter(leccion => 
+        leccion.Cumplimiento_leccion && 
+        leccion.Cumplimiento_leccion.length > 0 && 
+        leccion.Cumplimiento_leccion[0].estado
+      ).length;
+
+      return totalLecciones > 0 ? Math.round((leccionesCompletadas / totalLecciones) * 100) : 0;
+    } catch (error) {
+      console.error("Error calculando progreso:", error);
+      return 0;
+    }
+  };
+
+  const cursosArray = Array.isArray(cursos) ? cursos : [];
+
+  const cursosFiltrados = cursosArray.filter(curso => {
+    const progreso = calcularProgresoCurso(curso);
+    switch (filtro) {
+      case "completadas": return progreso === 100;
+      case "en_progreso": return progreso > 0 && progreso < 100;
+      case "no_iniciadas": return progreso === 0;
+      default: return true;
+    }
+  });
+
+  return (
+    <div className="space-y-4">
+      {cursosFiltrados.map((curso) => {
+        const progresoCurso = calcularProgresoCurso(curso);
+        let estadoCurso = progresoCurso === 100 
+          ? "completado"
+          : progresoCurso > 0 
+            ? "en_progreso" 
+            : "no_iniciado";
+
+        return (
+          <Card key={curso.id_curso}>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>{curso.nombre_curso}</CardTitle>
+                <div className="flex items-center gap-4">
+                  <EstadoCursoBadge estado={estadoCurso} />
+                  <Link to={`/verCursoUsuario/${curso.id_curso}`}>
+                    <Button variant="outline">Ver Curso</Button>
+                  </Link>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Progress value={progresoCurso} max={100} />
+              <p className="mt-2 text-sm text-gray-600">
+                {progresoCurso}% Completado
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })}
+      {cursosFiltrados.length === 0 && (
+        <p className="text-center text-gray-500 py-4">
+          No hay cursos {filtro === "completadas" ? "completados" : 
+                        filtro === "en_progreso" ? "en progreso" : 
+                        filtro === "no_iniciadas" ? "sin iniciar" : ""}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function EstadoCursoBadge({ estado }) {
+  const badgeVariants = {
+    completado: "bg-green-500",
+    en_progreso: "bg-yellow-500",
+    no_iniciado: "bg-gray-500"
+  }
+
+  const badgeTexts = {
+    completado: "Completado",
+    en_progreso: "En Progreso",
+    no_iniciado: "No Iniciado"
+  }
+
+  return (
+    <Badge className={`${badgeVariants[estado]} text-white`}>
+      {badgeTexts[estado]}
+    </Badge>
+  )
 }

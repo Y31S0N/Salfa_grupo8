@@ -26,7 +26,6 @@ import {
 } from "../../components/ui/card";
 import { Search, UserCheck, UserPen, UserX, Plus } from "lucide-react";
 import { Toaster, toast } from "sonner";
-import { auth } from "../../config/firebase";
 import { getAuth } from "firebase/auth";
 import {
   Dialog,
@@ -38,6 +37,7 @@ import N_usuario from "./nuevo-usuario";
 import { useUser } from "../../contexts/UserContext";
 import { EditarUsuario } from "./EditarUsuario";
 import { BarChart2 } from "lucide-react";
+import { userService } from "../../services/userService";
 
 interface Usuario {
   id: string;
@@ -76,6 +76,7 @@ export default function ListadoUsuarios() {
   const [selectedDept, setSelectedDept] = useState<string>("Todos");
   const [areas, setAreas] = useState<Area[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   useEffect(() => {
     cargarAreas();
@@ -239,6 +240,37 @@ export default function ListadoUsuarios() {
     return await user.getIdToken();
   };
 
+  const handleSelectUser = (rut: string) => {
+    setSelectedUsers((prev) =>
+      prev.includes(rut) ? prev.filter((r) => r !== rut) : [...prev, rut]
+    );
+  };
+
+  const handleDeleteUsers = async () => {
+    if (!selectedUsers.length) {
+      toast.error("Selecciona al menos un usuario para eliminar");
+      return;
+    }
+
+    if (
+      !confirm(`¿Estás seguro de eliminar ${selectedUsers.length} usuario(s)?`)
+    ) {
+      return;
+    }
+
+    try {
+      const response = await userService.deleteUsers(selectedUsers);
+      toast.success(response.mensaje);
+      // Actualizar la lista de usuarios
+      await cargarUsuarios(selectedDept);
+      // Limpiar selección
+      setSelectedUsers([]);
+    } catch (error) {
+      toast.error("Error al eliminar usuarios");
+      console.error(error);
+    }
+  };
+
   // Si el usuario no está autenticado o está cargando, mostrar loading
   if (!user) {
     return <div>Cargando...</div>;
@@ -294,16 +326,17 @@ export default function ListadoUsuarios() {
               </SelectContent>
             </Select>
 
-            {user.role.toLowerCase() === "administrador" && (
-              <Button
-                onClick={() => setShowModal(true)}
-                variant="default"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                Nuevo Usuario
-              </Button>
-            )}
+            {user.role.toLowerCase() === "administrador" ||
+              (user.role.toLowerCase() === "trabajador" && (
+                <Button
+                  onClick={() => setShowModal(true)}
+                  variant="default"
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Nuevo Usuario
+                </Button>
+              ))}
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
               <DialogContent className="max-w-4xl">
@@ -324,6 +357,24 @@ export default function ListadoUsuarios() {
               </TableCaption>
               <TableHeader>
                 <TableRow>
+                  <TableHead>
+                    <input
+                      type="checkbox"
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedUsers(usuariosFiltrados.map((u) => u.rut));
+                        } else {
+                          setSelectedUsers([]);
+                        }
+                      }}
+                      checked={
+                        usuariosFiltrados.length > 0 &&
+                        usuariosFiltrados.every((u) =>
+                          selectedUsers.includes(u.rut)
+                        )
+                      }
+                    />
+                  </TableHead>
                   <TableHead>RUT</TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Apellido Paterno</TableHead>
@@ -337,6 +388,13 @@ export default function ListadoUsuarios() {
               <TableBody>
                 {usuariosFiltrados.map((usuario) => (
                   <TableRow key={usuario.rut}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={selectedUsers.includes(usuario.rut)}
+                        onChange={() => handleSelectUser(usuario.rut)}
+                      />
+                    </TableCell>
                     <TableCell>{usuario.rut}</TableCell>
                     <TableCell>{usuario.nombre}</TableCell>
                     <TableCell>{usuario.apellido_paterno}</TableCell>
@@ -350,7 +408,7 @@ export default function ListadoUsuarios() {
                     </TableCell>
                     <TableCell>
                       {user.role.toLowerCase() === "administrador" ||
-                      "trabajador" ? (
+                      user.role.toLowerCase() === "trabajador" ? (
                         <>
                           <EditarUsuario
                             usuario={usuario}
@@ -384,7 +442,7 @@ export default function ListadoUsuarios() {
                             size="icon"
                             className="text-blue-500 ml-2"
                             onClick={() =>
-                              navigate(`/dashboard-perfil-rh/${usuario.id}`)
+                              navigate(`/dashboard-perfil-rh/${usuario.rut}`)
                             }
                           >
                             <BarChart2 className="h-4 w-4" />
@@ -404,6 +462,16 @@ export default function ListadoUsuarios() {
             <p className="text-center text-gray-500 mt-6">
               No se encontraron usuarios que coincidan con la búsqueda.
             </p>
+          )}
+
+          {selectedUsers.length > 0 && (
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUsers}
+              className="mb-4"
+            >
+              Eliminar ({selectedUsers.length}) usuarios
+            </Button>
           )}
         </CardContent>
       </Card>

@@ -170,3 +170,33 @@ export const deleteMobulo = async (req, res) => {
     res.status(500).json({ error: "Error al eliminar el módulo" });
   }
 };
+
+export const actualizarModulo = async (req, res) => {
+  try {
+    const { moduloId } = req.params;
+    const { estado_modulo } = req.body;
+
+    // Primero buscamos el módulo actual
+    const moduloExistente = await prisma.modulo.findUnique({
+      where: { id_modulo: parseInt(moduloId) },
+    });
+
+    if (!moduloExistente) {
+      return res.status(404).json({ error: "Módulo no encontrado" });
+    }
+
+    // Actualizamos solo si el estado es diferente
+    if (moduloExistente.estado_modulo !== estado_modulo) {
+      const moduloActualizado = await prisma.modulo.update({
+        where: { id_modulo: parseInt(moduloId) },
+        data: { estado_modulo },
+      });
+      return res.json(moduloActualizado);
+    }
+
+    return res.json(moduloExistente);
+  } catch (error) {
+    console.error("Error al actualizar módulo:", error);
+    res.status(500).json({ mensaje: "Error al actualizar el módulo" });
+  }
+};

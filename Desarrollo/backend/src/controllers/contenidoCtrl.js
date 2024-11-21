@@ -507,15 +507,14 @@ export const getRegistrosVisualizacion = async (req, res) => {
   try {
     const { cursoId, userId } = req.params;
 
-    // Primero obtenemos todos los contenidos del curso
     const registros = await prisma.$queryRaw`
       SELECT rvc.* 
-      FROM RegistroVisualizacionContenido rvc
-      JOIN Contenido c ON c.id_contenido = rvc.contenidoId
-      JOIN Leccion l ON l.id_leccion = c.leccionId
-      JOIN Modulo m ON m.id_modulo = l.moduloId
-      WHERE m.cursoId = ${parseInt(cursoId)}
-      AND rvc.usuarioId = ${userId}
+      FROM "RegistroVisualizacionContenido" rvc
+      JOIN "Contenido" c ON c.id_contenido = rvc."contenidoId"
+      JOIN "LeccionCurso" l ON l.id_leccion = c."leccionId"
+      JOIN "Modulo" m ON m.id_modulo = l."moduloId"
+      WHERE m."cursoId" = ${parseInt(cursoId)}
+      AND rvc."usuarioId" = ${userId}
     `;
 
     res.status(200).json(registros);

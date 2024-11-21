@@ -36,7 +36,7 @@ router.put("/api/contenido/reorder", reorderContenido);
 router.post("/api/contenido/registrar-visualizacion", registrarVisualizacion);
 
 router.get(
-  "/registros-visualizacion/:cursoId/:userId",
+  "/api/contenido/registros-visualizacion/:cursoId/:userId",
   getRegistrosVisualizacion
 );
 
