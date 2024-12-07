@@ -3,8 +3,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../../comp
 import { Button } from "../../components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { toast } from "sonner";
+import { useNavigate } from 'react-router-dom';
 
-// Modal de confirmación
 interface ConfirmationModalProps {
     isOpen: boolean;
     message: string;
@@ -48,6 +48,8 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
     const [actionType, setActionType] = useState<'assign' | 'remove' | 'none'>('none');
     const [areaToRemove, setAreaToRemove] = useState<Area | null>(null); // Para almacenar área a eliminar
 
+    const navigate = useNavigate();
+
     // Cargar áreas disponibles y asignadas al curso
     useEffect(() => {
         const fetchAreas = async () => {
@@ -55,19 +57,23 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
                 const response = await fetch('http://localhost:3000/api/area/');
                 if (!response.ok) throw new Error('Failed to fetch areas');
                 const allAreas = await response.json();
-                
+
                 const response2 = await fetch(`http://localhost:3000/api/cursoArea/${cursoId}`);
                 if (!response2.ok) throw new Error('Failed to fetch assigned areas');
                 const assignedAreas = await response2.json();
-                
+
                 // Guardar áreas asignadas
                 setAreasSeleccionadas(assignedAreas);
                 setAreasOriginales(assignedAreas);
-                
-                // Filtrar áreas disponibles para excluir las ya asignadas
+
+                // Filtrar áreas disponibles para excluir las ya asignadas y aquellas sin usuarios
                 const assignedAreaIds = new Set(assignedAreas.map((area: Area) => area.id_area));
-                const availableAreas = allAreas.filter((area: Area) => !assignedAreaIds.has(area.id_area));
-                setAreasDisponibles(availableAreas);
+                const availableAreas = await Promise.all(allAreas.map(async (area: Area) => {
+                    const response3 = await fetch(`http://localhost:3000/api/area/${area.id_area}/usuarios`);
+                    const usuarios = await response3.json();
+                    return !assignedAreaIds.has(area.id_area) && usuarios.length > 0 ? area : null;
+                }));
+                setAreasDisponibles(availableAreas.filter(area => area !== null));
             } catch (error) {
                 console.error('Error fetching areas:', error);
                 toast.error("Error al cargar las áreas");
@@ -78,7 +84,7 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
     }, [cursoId]);
 
     // Lógica para quitar área
-    const handleRemoveArea = (area: Area) => {
+    const handleRemoveArea = async (area: Area) => {
         setAreaToRemove(area);
         setModalMessage(`¿Estás seguro de que deseas eliminar el área "${area.nombre_area}" de este curso?`);
         setActionType('remove');
@@ -94,7 +100,6 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
         }
     };
 
-    // Confirmar la eliminación
     const confirmAction = async () => {
         if (actionType === 'remove' && areaToRemove) {
             setIsLoading(true);
@@ -102,26 +107,30 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
                 const response = await fetch(`http://localhost:3000/api/cursoArea/${cursoId}`, {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ areaId: areaToRemove.id_area }),
+                    body: JSON.stringify({ areaId: [areaToRemove.id_area] }),
                 });
-                if (!response.ok) throw new Error('Failed to remove area');
-                
+
+                if (!response.ok) throw new Error('Error al desasignar el área');
+
                 // Actualizar las listas
                 setAreasSeleccionadas(prev => prev.filter(area => area.id_area !== areaToRemove.id_area));
-                setAreasDisponibles(prev => [...prev, areaToRemove].sort((a, b) => 
+                setAreasDisponibles(prev => [...prev, areaToRemove].sort((a, b) =>
                     a.nombre_area.localeCompare(b.nombre_area)
                 ));
-                
+
                 toast.success("Área desasignada correctamente");
+                onCreate();
             } catch (error) {
                 console.error('Error removing area:', error);
                 toast.error("Error al desasignar el área");
             } finally {
                 setIsLoading(false);
+                setIsModalOpen(false); // Cerrar el modal
             }
         }
-        setIsModalOpen(false);
     };
+
+
 
     const cancelAction = () => {
         setIsModalOpen(false);
@@ -132,7 +141,7 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
         try {
             // Obtener IDs de las áreas seleccionadas
             const selectedAreaIds = areasSeleccionadas.map(area => area.id_area);
-            
+
             // Realizar la asignación de las áreas al curso
             const response = await fetch(`http://localhost:3000/api/cursoArea/${cursoId}`, {
                 method: 'POST',
@@ -141,9 +150,11 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
             });
 
             if (!response.ok) throw new Error('Error al asignar áreas');
-            
+
+            // Notificar al componente padre
+            onCreate(); // Notificar al componente padre para mostrar el toast
+            setIsModalOpen(false);
             toast.success("Áreas asignadas correctamente");
-            onCreate(); // Notificar al componente padre
         } catch (error) {
             console.error('Error saving areas:', error);
             toast.error("Error al asignar las áreas");
@@ -152,10 +163,20 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
         }
     };
 
+
+
     return (
         <Card className="w-full">
             <CardHeader>
-                <CardTitle>Asignar Áreas al Curso</CardTitle>
+                <CardTitle className="flex items-center">
+                    Asignar Áreas al Curso
+                    <span
+                        className="ml-2 text-yellow-500 cursor-pointer"
+                        title="Las áreas disponibles son aquellas donde hay usuarios existentes o disponibles que puedan completar el curso"
+                    >
+                        ❗
+                    </span>
+                </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Selector de áreas */}
@@ -166,8 +187,8 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
                     <Select onValueChange={handleSelectArea}>
                         <SelectTrigger>
                             <SelectValue placeholder={
-                                areasDisponibles.length === 0 
-                                    ? "No hay áreas disponibles" 
+                                areasDisponibles.length === 0
+                                    ? "No hay áreas disponibles"
                                     : "Seleccione un área"
                             } />
                         </SelectTrigger>
@@ -180,8 +201,8 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
                                 areasDisponibles
                                     .sort((a, b) => a.nombre_area.localeCompare(b.nombre_area))
                                     .map(area => (
-                                        <SelectItem 
-                                            key={area.id_area.toString()} 
+                                        <SelectItem
+                                            key={area.id_area.toString()}
                                             value={area.id_area.toString()}
                                         >
                                             {area.nombre_area}
@@ -213,9 +234,9 @@ const AsignarAreaACurso: React.FC<AsignarAreaACursoProps> = ({ cursoId, onCreate
                 </div>
             </CardContent>
             <CardFooter>
-                <Button 
-                    type="button" 
-                    className="w-full" 
+                <Button
+                    type="button"
+                    className="w-full"
                     disabled={isLoading}
                     onClick={handleConfirmChanges}
                 >

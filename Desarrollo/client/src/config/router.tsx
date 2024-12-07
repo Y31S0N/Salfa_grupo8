@@ -30,6 +30,7 @@ import PerfilUsuario from "../page/private/perfil-usuario";
 import HomeUsuarios from "../page/private/home-usuarios";
 import SubirContenido from "../page/private/subircontenido";
 import DetalleCurso from "../page/private/vercurso-usuario";
+import UsuariosCurso from "../page/private/usuarios-curso";
 
 import React from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
@@ -84,6 +85,15 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
+        path: "",
+        element: (
+          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+            <Listado_cursos />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        index: true,
         path: "home",
         element: (
           <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
@@ -99,14 +109,14 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      // {
-      //   path: "listado_cursos",
-      //   element: (
-      //     <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
-      //       <Listado_cursos />
-      //     </ProtectedRoute>
-      //   ),
-      // },
+      {
+        path: "listado_cursos",
+        element: (
+          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+            <Listado_cursos />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "listado_cursos_usuario",
         element: (
@@ -118,6 +128,10 @@ export const router = createBrowserRouter([
       {
         path: "agregar_cursos",
         element: <Agregar_cursos />,
+      },
+      {
+        path: "usuarios_curso/:id",
+        element: <UsuariosCurso />,
       },
       {
         path: "modificar_curso/:id",

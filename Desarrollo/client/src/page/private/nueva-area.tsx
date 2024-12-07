@@ -50,7 +50,7 @@ const FormularioArea: React.FC<FormularioAreaProps> = ({ onCreate }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.nombre_area.trim() === '') {
       toast.error('El Área es requerida');
       return;
@@ -99,7 +99,7 @@ const FormularioArea: React.FC<FormularioAreaProps> = ({ onCreate }) => {
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="imagen">Imagen del área</Label>
               <div className="flex flex-col items-center gap-4">
