@@ -17,6 +17,7 @@ import { Outlet } from "react-router-dom";
 import { useUser } from "../../contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { SyncLoader } from "react-spinners";
+import logosalfa from "../../assets/logosalfa.png";
 
 export default function PrivateLayout_flex() {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -151,8 +152,12 @@ export default function PrivateLayout_flex() {
             isNavOpen ? "translate-x-0" : "-translate-x-full"
           } transition-transform duration-300 ease-in-out z-10 md:relative md:translate-x-0`}
         >
-          <div className="p-4 md:hidden">
-            <h1 className="text-2xl font-bold text-gray-800">Mi Dashboard</h1>
+          <div className="mt-8">
+            <img 
+              src={logosalfa} 
+              alt="Salfa Mantenciones Logo"
+              className="w-full max-w-[200px] mx-auto mb-4"
+            />
           </div>
           <ul className="mt-4">{renderNavItems()}</ul>
         </nav>

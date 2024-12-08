@@ -43,6 +43,13 @@ const Modificar_curso = () => {
     fetchCurso(); // Llama a la función al montar el componente
   }, [id]);
 
+  // Función para obtener la fecha mínima (fecha actual en formato YYYY-MM-DD)
+  const getFechaMinima = () => {
+    const hoy = new Date();
+    hoy.setDate(hoy.getDate() + 1); // Suma un día para no permitir la fecha actual
+    return hoy.toISOString().split('T')[0];
+  };
+
   // Función para manejar el envío del formulario
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -132,6 +139,7 @@ const Modificar_curso = () => {
               id="fechaLimite"
               className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={fechaLimite}
+              min={getFechaMinima()} // Agregamos la validación de fecha mínima
               onChange={(e) => setFechaLimite(e.target.value)} // Actualiza el estado
             />
           </div>

@@ -6,18 +6,20 @@ import { dbConfig } from "./config/dbconfig.js";
 import cursoRouter from "./routes/curso.routes.js";
 import usuarioRouter from "./routes/usuario.routes.js";
 import moduloRouter from "./routes/modulo.routes.js";
-import leccionRouter from "./routes//leccionCurso.routes.js";
+import leccionRouter from "./routes/leccionCurso.routes.js";
 import areaRouter from "./routes/area.routes.js";
 import cursoAreaRouter from "./routes/cursoArea.routes.js";
 import cumplimientoLeccionRouter from "./routes/cumplimientoLeccion.routes.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import contenidoRouter from "./routes/contenido.routes.js";
+import rolRouter from "./routes/rol.routes.js";
+import iniciarCronJobs from './controllers/cronJobs.js';
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import contenidoRouter from "./routes/contenido.routes.js";
-import rolRouter from "./routes/rol.routes.js";
+
 const app = express();
 
 // Configurar middleware para servir archivos estáticos
@@ -50,6 +52,9 @@ app.use(cursoAreaRouter);
 app.use(cumplimientoLeccionRouter);
 app.use(contenidoRouter);
 app.use(rolRouter);
+
+// Inicializar cron jobs
+iniciarCronJobs();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -50,6 +50,12 @@ interface ImagenCurso {
   letra?: string;
 }
 
+// Agregar esta función helper después de las interfaces
+const isCursoVencido = (fechaLimite: string | null): boolean => {
+  if (!fechaLimite) return false;
+  return new Date(fechaLimite) < new Date();
+};
+
 export default function ListadoCursos() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -295,6 +301,7 @@ export default function ListadoCursos() {
                     variant={curso.estado_curso ? "destructive" : "default"}
                     onClick={() => handleToggleCurso(curso)}
                     className="flex-1"
+                    disabled={!curso.estado_curso && isCursoVencido(curso.fecha_limite)}
                   >
                     {curso.estado_curso ? "Deshabilitar" : "Habilitar"}
                   </Button>

@@ -15,8 +15,9 @@ import {
 } from "../../components/ui/select";
 
 interface NuevoUsuarioProps {
-  isModal?: boolean;
-  onClose?: () => void;
+  isModal: boolean;
+  onClose: () => void;
+  userRole?: string;
 }
 
 interface Area {
@@ -29,7 +30,7 @@ interface Rol {
   nombre_rol: string;
 }
 
-const N_usuario: React.FC<NuevoUsuarioProps> = ({ isModal, onClose }) => {
+const N_usuario: React.FC<NuevoUsuarioProps> = ({ isModal, onClose, userRole }) => {
   const [formData, setFormData] = useState({
     rut: "",
     nombre: "",
@@ -77,57 +78,95 @@ const N_usuario: React.FC<NuevoUsuarioProps> = ({ isModal, onClose }) => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prevData) => {
+      if (name === "rol") {
+        const selectedRole = roles.find(rol => String(rol.id_rol) === value);
+        if (selectedRole?.nombre_rol.toLowerCase() === "administrador") {
+          return {
+            ...prevData,
+            [name]: value,
+            area: ""
+          };
+        }
+      }
+      return {
+        ...prevData,
+        [name]: value,
+      };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isRutValid) {
-      alert("Por favor ingresa un RUT válido.");
+
+    if (!formData.rut || !formData.nombre || !formData.apellido_paterno || 
+        !formData.apellido_materno || !formData.correo || !formData.rol) {
+      alert("Todos los campos son obligatorios");
       return;
     }
 
+    const esAdmin = roles.find(rol => String(rol.id_rol) === formData.rol)?.nombre_rol.toLowerCase() === "administrador";
+
+    if (!esAdmin && !formData.area) {
+      alert("El área es obligatoria para usuarios no administradores");
+      return;
+    }
+
+    const datosAEnviar = {
+      rut: formData.rut,
+      nombre: formData.nombre,
+      apellido_paterno: formData.apellido_paterno,
+      apellido_materno: formData.apellido_materno,
+      correo: formData.correo,
+      rolId: parseInt(formData.rol),
+      areaId: esAdmin ? null : parseInt(formData.area),
+    };
+
     try {
-      const response = await api.post("/newuser", {
-        rut: formData.rut,
-        nombre: formData.nombre,
-        apellido_paterno: formData.apellido_paterno,
-        apellido_materno: formData.apellido_materno,
-        correo: formData.correo,
-        rolId: parseInt(formData.rol),
-        areaId: parseInt(formData.area),
-      });
+      const response = await api.post("/newuser", datosAEnviar);
 
-      const { accion, mensaje } = response.data;
-      alert(mensaje);
+      console.log('Respuesta exitosa:', response.data);
 
-      if (accion === "Crear en ambos") {
-        console.log(mensaje);
-      } else if (accion === "Crear solo en Firebase") {
-        console.log(mensaje);
-      } else if (accion === "Crear solo en la base de datos") {
-        console.log(mensaje);
-      } else if (accion === "No crear") {
-        console.log(mensaje);
-      } else if (accion === "Error") {
-        console.log(mensaje);
+      if (response.data.mensaje) {
+        alert(response.data.mensaje);
+        if (isModal && onClose) {
+          onClose();
+        }
       }
 
-      if (isModal && onClose) {
-        onClose();
-      }
     } catch (error) {
-      console.error("Ocurrió un error en la verificación", error);
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        alert(
-          "Sesión expirada o inválida. Por favor, inicie sesión nuevamente."
-        );
+      console.error("Error completo:", error);
+      
+      if (axios.isAxiosError(error)) {
+        console.error('Error response:', error.response?.data);
+        console.error('Error status:', error.response?.status);
+        console.error('Error headers:', error.response?.headers);
+
+        if (error.response?.data?.mensaje) {
+          alert(error.response.data.mensaje);
+        } else if (error.response?.status === 500) {
+          alert("Error interno del servidor. Por favor, contacte al administrador.");
+        } else {
+          alert("Error al crear el usuario. Por favor, verifique los datos e intente nuevamente.");
+        }
       } else {
-        alert("Error en la verificación del usuario");
+        alert("Error inesperado al crear el usuario.");
       }
+    }
+  };
+
+  const getRolesDisponibles = (userRole: string) => {
+    switch (userRole.toLowerCase()) {
+      case "administrador":
+        return roles.filter(rol => 
+          ["administrador", "trabajador"].includes(rol.nombre_rol.toLowerCase())
+        );
+      case "trabajador":
+        return roles.filter(rol => 
+          ["trabajador", "usuario"].includes(rol.nombre_rol.toLowerCase())
+        );
+      default:
+        return [];
     }
   };
 
@@ -188,21 +227,23 @@ const N_usuario: React.FC<NuevoUsuarioProps> = ({ isModal, onClose }) => {
 
       <div className="space-y-2">
         <Label htmlFor="rol">Rol</Label>
-        <Select
-          value={formData.rol}
-          onValueChange={(value) => handleSelectChange("rol", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona un rol" />
-          </SelectTrigger>
-          <SelectContent>
-            {roles.map((rol) => (
-              <SelectItem key={rol.id_rol} value={String(rol.id_rol)}>
-                {rol.nombre_rol}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {userRole && (
+          <Select
+            value={formData.rol}
+            onValueChange={(value) => handleSelectChange("rol", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un rol" />
+            </SelectTrigger>
+            <SelectContent>
+              {getRolesDisponibles(userRole).map((rol) => (
+                <SelectItem key={rol.id_rol} value={String(rol.id_rol)}>
+                  {rol.nombre_rol}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -210,9 +251,14 @@ const N_usuario: React.FC<NuevoUsuarioProps> = ({ isModal, onClose }) => {
         <Select
           value={formData.area}
           onValueChange={(value) => handleSelectChange("area", value)}
+          disabled={roles.find(rol => String(rol.id_rol) === formData.rol)?.nombre_rol.toLowerCase() === "administrador"}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Selecciona un área" />
+            <SelectValue placeholder={
+              roles.find(rol => String(rol.id_rol) === formData.rol)?.nombre_rol.toLowerCase() === "administrador" 
+              ? "N/A" 
+              : "Selecciona un área"
+            } />
           </SelectTrigger>
           <SelectContent>
             {areas.map((area) => (

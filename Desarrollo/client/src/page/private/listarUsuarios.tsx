@@ -130,17 +130,30 @@ export default function ListadoUsuarios() {
       if (area && area !== "Todos") {
         url += `?id_area=${area}`;
       }
+      
+      console.log('Fetching usuarios from:', url);
+      
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('Datos recibidos:', data);
+
+      if (!data.usuarios) {
+        console.error('No se encontró la propiedad usuarios en la respuesta');
+        setUsuarios([]);
+        return;
+      }
+
       const usuarios = data.usuarios.map((usr) => ({
         ...usr,
         rut: formatRut(usr.rut),
         estadoFirebase: usr.estadoFirebase ?? true,
       }));
+      
+      console.log('Usuarios procesados:', usuarios);
       setUsuarios(usuarios);
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
@@ -326,24 +339,28 @@ export default function ListadoUsuarios() {
               </SelectContent>
             </Select>
 
-            {user.role.toLowerCase() === "administrador" ||
-              (user.role.toLowerCase() === "trabajador" && (
-                <Button
-                  onClick={() => setShowModal(true)}
-                  variant="default"
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Nuevo Usuario
-                </Button>
-              ))}
+            {(user.role.toLowerCase() === "administrador" || 
+              user.role.toLowerCase() === "trabajador") && (
+              <Button
+                onClick={() => setShowModal(true)}
+                variant="default"
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Nuevo Usuario
+              </Button>
+            )}
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
               <DialogContent className="max-w-4xl">
                 <DialogHeader>
                   <DialogTitle>Crear Nuevo Usuario</DialogTitle>
                 </DialogHeader>
-                <N_usuario isModal={true} onClose={() => setShowModal(false)} />
+                <N_usuario 
+                  isModal={true} 
+                  onClose={() => setShowModal(false)} 
+                  userRole={user?.role || ''}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -402,9 +419,7 @@ export default function ListadoUsuarios() {
                     <TableCell>{usuario.correo}</TableCell>
                     <TableCell>{usuario.rol.nombre_rol}</TableCell>
                     <TableCell>
-                      {usuario.Area
-                        ? usuario.Area.nombre_area
-                        : "Sin área asignada"}
+                      {usuario.Area ? usuario.Area.nombre_area : "N/A"}
                     </TableCell>
                     <TableCell>
                       {user.role.toLowerCase() === "administrador" ||
