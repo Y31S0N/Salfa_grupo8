@@ -14,6 +14,7 @@ import { Button } from "../../components/ui/button";
 import { Toggle } from "../../components/ui/toggle";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
+import { verificarRequisitosMinimos } from "../../../../backend/src/controllers/cursoCtrl";
 
 type Curso = {
   id_curso: number;
@@ -22,6 +23,7 @@ type Curso = {
   fecha_creacion: string;
   fecha_limite?: string | null;
   estado_curso: boolean;
+  modulos?: Modulo[];
 };
 
 type Modulo = {
@@ -30,6 +32,7 @@ type Modulo = {
   descripcion_modulo: string;
   cursoId: number;
   estado_modulo: boolean;
+  lecciones?: Leccion[];
 };
 
 type Leccion = {
@@ -37,6 +40,7 @@ type Leccion = {
   nombre_leccion: string;
   descripcion_leccion: string;
   estado_leccion: boolean;
+  contenidos?: Contenido[];
 };
 
 export default function Vercurso() {
@@ -49,6 +53,7 @@ export default function Vercurso() {
   const [expandedModulo, setExpandedModulo] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isCursoHabilitable, setIsCursoHabilitable] = useState<boolean>(false);
 
   useEffect(() => {
     const obtenerCursoYModulos = async () => {
@@ -64,6 +69,24 @@ export default function Vercurso() {
             `http://localhost:3000/cursos/${id}/modulos`
           );
           setModulos(modulosResponse.data);
+
+          const estructuraResponse = await axios.get<Curso>(
+            `http://localhost:3000/api/cursoEstructura/${id}`
+          );
+          const estructuraCurso = estructuraResponse.data;
+
+          const modulosConLecciones = estructuraCurso.modulos?.length > 0;
+
+          const leccionesConContenido = estructuraCurso.modulos?.every(modulo =>
+            modulo.lecciones.length > 0
+          );
+
+          const leccionesConContenidoVerificado = estructuraCurso.modulos.every(modulo =>
+            modulo.lecciones.every(leccion => leccion.contenidos && leccion.contenidos.length > 0)
+          );
+
+
+          setIsCursoHabilitable(modulosConLecciones && leccionesConContenido && leccionesConContenidoVerificado);
         } catch (error) {
           setError(
             "Error al obtener el curso y los módulos. Por favor, intenta nuevamente."
@@ -152,6 +175,48 @@ export default function Vercurso() {
     }
   };
 
+  const handleToggleCurso = async () => {
+    if (!curso.estado_curso && !verificarRequisitosMinimos(curso)) {
+      toast.error(
+        "El curso debe tener al menos un módulo con una lección y un contenido para ser habilitado"
+      );
+      return;
+    }
+
+    try {
+      const result = await Swal.fire({
+        title: `¿Estás seguro de ${curso.estado_curso ? "deshabilitar" : "habilitar"
+          } este curso?`,
+        text: "Este cambio afectará la disponibilidad del curso para los usuarios.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: curso.estado_curso
+          ? "Sí, deshabilitar"
+          : "Sí, habilitar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (result.isConfirmed) {
+        const response = await axios.put<Curso>(
+          `http://localhost:3000/cursos/${curso.id_curso}`,
+          {
+            estado_curso: !curso.estado_curso,
+          }
+        );
+        setCurso(response.data);
+        toast.success(
+          `El curso ha sido ${curso.estado_curso ? "deshabilitado" : "habilitado"
+          } correctamente.`
+        );
+      }
+    } catch (error) {
+      console.error("Error al cambiar el estado del curso:", error);
+      toast.error("Hubo un problema al intentar cambiar el estado del curso.");
+    }
+  };
+
   if (loading) {
     return <p>Cargando curso y módulos...</p>;
   }
@@ -237,11 +302,10 @@ export default function Vercurso() {
                                 modulo.estado_modulo
                               )
                             }
-                            className={`w-[150px] ${
-                              modulo.estado_modulo
+                            className={`w-[150px] ${modulo.estado_modulo
                                 ? "bg-green-500 text-white hover:bg-green-600"
                                 : "bg-red-500 text-white hover:bg-red-600"
-                            }`}
+                              }`}
                           >
                             {modulo.estado_modulo
                               ? "Habilitado"
@@ -292,11 +356,10 @@ export default function Vercurso() {
                                     Boolean(leccion.estado_leccion)
                                   )
                                 }
-                                className={`w-[150px] ${
-                                  leccion.estado_leccion
+                                className={`w-[150px] ${leccion.estado_leccion
                                     ? "bg-green-500 text-white hover:bg-green-600"
                                     : "bg-red-500 text-white hover:bg-red-600"
-                                }`}
+                                  }`}
                               >
                                 {leccion.estado_leccion
                                   ? "Habilitado"
@@ -326,6 +389,21 @@ export default function Vercurso() {
           )}
         </CardContent>
       </Card>
+
+      <Button
+        variant={curso.estado_curso ? "destructive" : "default"}
+        onClick={handleToggleCurso}
+        className="mt-4 w-[150px]"
+        disabled={!isCursoHabilitable}
+      >
+        {curso.estado_curso ? "Deshabilitar" : "Habilitar"}
+      </Button>
+
+      {!isCursoHabilitable && (
+        <p className="text-red-500 mt-2">
+          El Curso debe tener contenido en su totalidad y debe estar asignado a algún Área para poder Habilitarse
+        </p>
+      )}
     </div>
   );
 }

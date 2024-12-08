@@ -15,7 +15,7 @@ datasource db {
 
 model CursoCapacitacion {
   id_curso          Int             @id @default(autoincrement())
-  nombre_curso      String          @db.VarChar(50)
+  nombre_curso      String          @db.VarChar(255)
   descripcion_curso String          @db.VarChar(500)
   fecha_creacion    DateTime
   fecha_limite      DateTime?
@@ -27,7 +27,7 @@ model CursoCapacitacion {
 
 model Modulo {
   id_modulo          Int               @id @default(autoincrement())
-  nombre_modulo      String            @db.VarChar(50)
+  nombre_modulo      String            @db.VarChar(255)
   descripcion_modulo String            @db.VarChar(500)
   cursoId            Int
   estado_modulo      Boolean
@@ -37,7 +37,7 @@ model Modulo {
 
 model LeccionCurso {
   id_leccion                     Int                              @id @default(autoincrement())
-  nombre_leccion                 String                           @db.VarChar(50)
+  nombre_leccion                 String                           @db.VarChar(255)
   descripcion_leccion            String                           @db.VarChar(500)
   fecha_de_creacion_leccion      DateTime
   estado_leccion                 Boolean
@@ -50,7 +50,7 @@ model LeccionCurso {
 
 model Contenido {
   id_contenido                   Int                              @id @default(autoincrement())
-  nombre_archivo                 String                           @db.VarChar(50)
+  nombre_archivo                 String                           @db.VarChar(255)
   indice_archivo                 Int
   url                            String                           @db.VarChar(2048)
   tipo_contenido                 String                           @db.VarChar(50)

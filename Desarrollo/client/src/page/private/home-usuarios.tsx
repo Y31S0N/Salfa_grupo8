@@ -32,14 +32,7 @@ const HomeUsuarios = () => {
 
     const fetchCursos = async (userRut: string) => {
         try {
-            // Primero obtenemos los cursos no asignados
-            const responseNoAsignados = await fetch(`http://localhost:3000/api/cursosNoUsuario/${userRut}`);
-            if (!responseNoAsignados.ok) {
-                throw new Error(`HTTP error! status: ${responseNoAsignados.status}`);
-            }
-            const cursosNoAsignados = await responseNoAsignados.json();
-
-            // Luego obtenemos los cursos asignados con su progreso
+            // Obtenemos solo los cursos asignados con su progreso
             const responseAsignados = await fetch(`http://localhost:3000/api/usuarioLecciones/${userRut}`);
             if (!responseAsignados.ok) {
                 throw new Error(`HTTP error! status: ${responseAsignados.status}`);
@@ -52,13 +45,7 @@ const HomeUsuarios = () => {
                 completado: calcularCompletado(ca.curso)
             })) || [];
 
-            // Combinamos ambos arrays
-            const todosCursos = [
-                ...cursosNoAsignados.map(c => ({ ...c, completado: false })),
-                ...cursosAsignados
-            ];
-
-            setCursos(todosCursos);
+            setCursos(cursosAsignados);
         } catch (error) {
             console.error("Error al obtener los cursos:", error);
             toast.error("Error al cargar los cursos");
