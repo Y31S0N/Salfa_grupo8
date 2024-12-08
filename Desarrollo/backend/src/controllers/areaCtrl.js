@@ -24,6 +24,94 @@ export const upload = multer({
   },
 }).single("imagen");
 
+export const crearArea = async (req, res) => {
+  try {
+    const { nombre_area } = req.body;
+    console.log(req.file);
+    
+
+    // Validar que se recibió el nombre del área
+    if (!nombre_area) {
+      return res.status(400).json({ error: "El nombre del área es requerido" });
+    }
+
+    // Preparar los datos para crear el área
+    const dataToCreate = {
+      nombre_area,
+    };
+
+    // Si hay una imagen, agregarla a los datos
+    if (req.file) {
+      dataToCreate.imagen = Buffer.from(req.file.buffer);
+    }
+
+    // Crear el área con o sin imagen
+    const nuevaArea = await prisma.area.create({
+      data: dataToCreate,
+    });
+
+    res.status(201).json({
+      message: "Área creada exitosamente",
+      area: {
+        id_area: nuevaArea.id_area,
+        nombre_area: nuevaArea.nombre_area,
+        tieneImagen: !!nuevaArea.imagen
+      }
+    });
+  } catch (error) {
+    console.error("Error al crear el Área:", error);
+    res.status(500).json({ 
+      error: "Error al crear el área",
+      details: error.message 
+    });
+  }
+};
+
+export const modificarArea = async (req, res) => {
+  try {
+    console.log("Archivo recibido:", req.file);
+    const { nombre_area } = req.body;
+    const dataToUpdate = {
+      nombre_area,
+    };
+
+    if (req.file) {
+      dataToUpdate.imagen = Buffer.from(req.file.buffer);
+    }
+
+    await prisma.area.update({
+      where: { id_area: parseInt(req.params.id) },
+      data: dataToUpdate,
+    });
+    
+    res.status(200).json({ message: "Área Modificada exitosamente" });
+  } catch (error) {
+    console.error("Error al Modificar el Área:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const obtenerImagenArea = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const area = await prisma.area.findUnique({
+      where: { id_area: parseInt(id) },
+      select: { imagen: true },
+    });
+
+    if (!area || !area.imagen) {
+      return res.status(404).json({ message: "Imagen no encontrada" });
+    }
+
+    // Enviar la imagen con el tipo de contenido apropiado
+    res.setHeader("Content-Type", "image/jpeg"); // Ajusta según el tipo de imagen
+    res.send(area.imagen);
+  } catch (error) {
+    console.error("Error al obtener la imagen:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const listarArea = async (req, res) => {
   const uid = parseInt(req.params.id);
 
@@ -50,51 +138,6 @@ export const listarAreas = async (req, res) => {
   }
 };
 
-export const crearArea = async (req, res) => {
-  try {
-    const { nombre_area } = req.body;
-
-    // Convertir el archivo a Buffer si existe
-    const imagen = req.file
-      ? Buffer.from(req.file.buffer) // Si usas memoria
-      : null;
-
-    // Crear el área con la imagen como Buffer
-    const nuevaArea = await prisma.area.create({
-      data: {
-        nombre_area,
-        imagen,
-      },
-    });
-
-    res.status(201).json({
-      area: {
-        ...nuevaArea,
-        imagen: nuevaArea.imagen ? true : false, // No enviamos la imagen en la respuesta
-      },
-      message: "Área creada exitosamente",
-    });
-  } catch (error) {
-    console.error("Error al crear el Área:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
-export const modificarArea = async (req, res) => {
-  const { nombre_area } = req.body;
-
-  try {
-    await prisma.area.update({
-      where: { id_area: parseInt(req.params.id) },
-      data: { nombre_area },
-    });
-    res.status(200).json({ message: "Área Modificada exitosamente" });
-  } catch (error) {
-    console.error("Error al Modificar el Área:", error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
 export const eliminarArea = async (req, res) => {
   const { id } = req.params;
 
@@ -109,23 +152,21 @@ export const eliminarArea = async (req, res) => {
   }
 };
 
-export const obtenerImagenArea = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const area = await prisma.area.findUnique({
-      where: { id_area: parseInt(id) },
-      select: { imagen: true },
-    });
+// Nuevo endpoint para obtener usuarios por área
+export const obtenerUsuariosPorArea = async (req, res) => {
+    const { id_area } = req.params;
 
-    if (!area || !area.imagen) {
-      return res.status(404).json({ message: "Imagen no encontrada" });
+    try {
+        const usuarios = await prisma.Usuario.findMany({
+            where: {
+                areaId: parseInt(id_area),
+                rolId: 3,
+            },
+        });
+
+        res.json(usuarios);
+    } catch (error) {
+        console.error("Error al obtener usuarios por área:", error);
+        res.status(500).json({ error: "Error al obtener usuarios por área" });
     }
-
-    // Enviar la imagen con el tipo de contenido apropiado
-    res.setHeader("Content-Type", "image/jpeg"); // Ajusta según el tipo de imagen
-    res.send(area.imagen);
-  } catch (error) {
-    console.error("Error al obtener la imagen:", error);
-    res.status(500).json({ error: error.message });
-  }
 };

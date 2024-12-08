@@ -13,6 +13,21 @@ import FormularioArea from './nueva-area'
 
 import FormularioModArea from './modificar-area';
 
+// Primero definimos la interfaz para el contenido
+interface Contenido {
+  id_contenido: number;
+  nombre_archivo: string;
+  indice_archivo: number;
+  url: string;
+  tipo_contenido: string;
+  leccionId: number;
+}
+
+// Luego definimos la interfaz para la respuesta
+interface ContenidoResponse {
+  success: boolean;
+  data: Contenido;
+}
 
 export default function ListadoAreas() {
     const [openCreate, setOpenCreate] = useState(false);

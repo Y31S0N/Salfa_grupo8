@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 import {
   Dialog,
@@ -19,7 +18,7 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import AsignarAreaACurso from "../private/asignarArea";
 import {
   Select,
@@ -37,10 +36,7 @@ interface Curso {
   descripcion_curso: string;
   estado_curso: boolean;
   fecha_limite: string;
-}
-interface Area {
-  id_area: Number;
-  nombre_area: string;
+  modulos?: Modulo[];
 }
 
 interface ImagenCurso {
@@ -55,6 +51,19 @@ const isCursoVencido = (fechaLimite: string | null): boolean => {
   if (!fechaLimite) return false;
   return new Date(fechaLimite) < new Date();
 };
+interface Modulo {
+  id_modulo: number;
+  lecciones?: Leccion[];
+}
+
+interface Leccion {
+  id_leccion: number;
+  contenidos?: Contenido[];
+}
+
+interface Contenido {
+  id_contenido: number;
+}
 
 export default function ListadoCursos() {
   const [searchParams] = useSearchParams();
@@ -72,7 +81,6 @@ export default function ListadoCursos() {
   >({});
   const [openAsignar, setOpenAsignar] = useState<number | null>(null);
 
-  // Primero definimos filteredCursos usando useMemo
   const filteredCursos = useMemo(() => {
     return cursos
       .filter((curso) =>
@@ -91,7 +99,6 @@ export default function ListadoCursos() {
       });
   }, [cursos, busqueda, statusFilter]);
 
-  // Luego usamos filteredCursos en el useEffect
   useEffect(() => {
     const cargarImagenesCursos = async () => {
       try {
@@ -126,11 +133,6 @@ export default function ListadoCursos() {
     }
   }, [filteredCursos]);
 
-  const handleSearch = (query: string) => {
-    console.log("Buscando:", query);
-    // Implementar lógica de búsqueda aquí
-  };
-
   const fetchCursos = async () => {
     try {
       const response = await axios.get<Curso[]>("http://localhost:3000/cursos");
@@ -145,54 +147,15 @@ export default function ListadoCursos() {
     fetchCursos();
   }, []);
 
-  const handleToggleCurso = async (curso: Curso) => {
-    try {
-      const result = await Swal.fire({
-        title: `¿Estás seguro de ${
-          curso.estado_curso ? "deshabilitar" : "habilitar"
-        } este curso?`,
-        text: "Este cambio afectará la disponibilidad del curso para los usuarios.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: curso.estado_curso
-          ? "Sí, deshabilitar"
-          : "Sí, habilitar",
-        cancelButtonText: "Cancelar",
-      });
-
-      if (result.isConfirmed) {
-        const response = await axios.put<Curso>(
-          `http://localhost:3000/cursos/${curso.id_curso}`,
-          {
-            estado_curso: !curso.estado_curso,
-          }
-        );
-        setCursos((prevCursos) =>
-          prevCursos.map((c) =>
-            c.id_curso === curso.id_curso ? response.data : c
-          )
-        );
-        toast.success(
-          `El curso ha sido ${
-            curso.estado_curso ? "deshabilitado" : "habilitado"
-          } correctamente.`
-        );
-      }
-    } catch (error) {
-      console.error("Error al cambiar el estado del curso:", error);
-      toast.error("Hubo un problema al intentar cambiar el estado del curso.");
-    }
-  };
-
   const handleAsignarAreaComplete = () => {
-    // toast.success("Áreas asignadas correctamente");
     fetchCursos(); // Recargar los cursos para reflejar los cambios
+    setOpenAsignar(null); // Cerrar el diálogo
+    // toast.success("Áreas asignadas correctamente");
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Toaster />
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-center mb-6">
           Gestión de Cursos
@@ -219,8 +182,8 @@ export default function ListadoCursos() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              <SelectItem value="activos">Activos</SelectItem>
-              <SelectItem value="inactivos">Inactivos</SelectItem>
+              <SelectItem value="activos">Habilitados</SelectItem>
+              <SelectItem value="inactivos">Inhabilitados</SelectItem>
             </SelectContent>
           </Select>
           <Link to="/agregar_cursos">
@@ -288,33 +251,27 @@ export default function ListadoCursos() {
               </CardContent>
 
               <CardFooter className="flex flex-col gap-2 pt-4">
-                <div className="flex gap-2 w-full">
-                  <Link
-                    to={`/modificar_curso/${curso.id_curso}`}
-                    className="flex-1"
-                  >
-                    <Button variant="outline" className="w-full">
-                      Modificar
-                    </Button>
-                  </Link>
+                <Link
+                  to={`/modificar_curso/${curso.id_curso}`}
+                  className="flex-1"
+                >
                   <Button
-                    variant={curso.estado_curso ? "destructive" : "default"}
-                    onClick={() => handleToggleCurso(curso)}
-                    className="flex-1"
-                    disabled={!curso.estado_curso && isCursoVencido(curso.fecha_limite)}
+                    variant="outline"
+                    className="w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-200"
                   >
-                    {curso.estado_curso ? "Deshabilitar" : "Habilitar"}
+                    Modificar
                   </Button>
-                </div>
-
+                </Link>
                 <Dialog
                   open={openAsignar === curso.id_curso}
-                  onOpenChange={(open) => !open && setOpenAsignar(null)}
+                  onOpenChange={(open) => {
+                    if (!open) setOpenAsignar(null);
+                  }}
                 >
                   <DialogTrigger asChild>
                     <Button
                       onClick={() => setOpenAsignar(curso.id_curso)}
-                      className="w-full"
+                      className="w-full bg-green-500 text-white hover:bg-green-600 transition duration-200"
                       variant="secondary"
                     >
                       Asignar áreas
@@ -327,20 +284,21 @@ export default function ListadoCursos() {
                     <AsignarAreaACurso
                       cursoId={curso.id_curso}
                       onCreate={handleAsignarAreaComplete}
+                      // setOpenAsignar={setOpenAsignar}
                     />
                   </DialogContent>
                 </Dialog>
               </CardFooter>
             </Card>
           ))}
-        </div>
 
-        {filteredCursos.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No se encontraron cursos que coincidan con los criterios de
-            búsqueda.
-          </div>
-        )}
+          {filteredCursos.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No se encontraron cursos que coincidan con los criterios de
+              búsqueda.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
