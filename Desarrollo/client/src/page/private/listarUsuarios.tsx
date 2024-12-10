@@ -136,7 +136,7 @@ export default function ListadoUsuarios() {
       }
 
       const data = await response.json();
-      const usuarios = data.usuarios.map((usr) => ({
+      const usuarios = data.usuarios.map((usr: any) => ({
         ...usr,
         rut: formatRut(usr.rut),
         estadoFirebase: usr.estadoFirebase ?? true,
@@ -155,15 +155,15 @@ export default function ListadoUsuarios() {
       case "administrador":
         // Mostrar solo administradores y trabajadores
         return usuarios.filter((usuario) =>
-          ["administrador", "trabajador"].includes(
+          ["administrador", "usuario"].includes(
             usuario.rol.nombre_rol.toLowerCase()
           )
         );
-      case "trabajador":
-        // Mostrar solo usuarios
-        return usuarios.filter(
-          (usuario) => usuario.rol.nombre_rol.toLowerCase() === "usuario"
-        );
+      // case "trabajador":
+      //   // Mostrar solo usuarios
+      //   return usuarios.filter(
+      //     (usuario) => usuario.rol.nombre_rol.toLowerCase() === "usuario"
+      //   );
       default:
         window.location.href = "/acceso-denegado";
         return [];
@@ -277,7 +277,7 @@ export default function ListadoUsuarios() {
   }
 
   // Si el usuario no tiene un rol válido, redirigir
-  if (!["administrador", "trabajador"].includes(user.role.toLowerCase())) {
+  if (!["administrador"].includes(user.role.toLowerCase())) {
     window.location.href = "/acceso-denegado";
     return null;
   }
@@ -327,7 +327,7 @@ export default function ListadoUsuarios() {
             </Select>
 
             {user.role.toLowerCase() === "administrador" ||
-              (user.role.toLowerCase() === "trabajador" && (
+              (user.role.toLowerCase() === "administrador" && (
                 <Button
                   onClick={() => setShowModal(true)}
                   variant="default"
@@ -408,7 +408,7 @@ export default function ListadoUsuarios() {
                     </TableCell>
                     <TableCell>
                       {user.role.toLowerCase() === "administrador" ||
-                      user.role.toLowerCase() === "trabajador" ? (
+                      user.role.toLowerCase() === "administrador" ? (
                         <>
                           <EditarUsuario
                             usuario={usuario}

@@ -111,7 +111,7 @@ const UsuariosAdmin = () => {
         apellido_paterno: "Rodríguez",
         apellido_materno: "Muñoz",
         correo: "pedro.rodriguez@ejemplo.com",
-        rolId: 3,
+        rolId: 1,
         areaId: 1,
       },
       {
@@ -138,7 +138,7 @@ const UsuariosAdmin = () => {
         apellido_paterno: "Torres",
         apellido_materno: "Rojas",
         correo: "laura.torres@ejemplo.com",
-        rolId: 3,
+        rolId: 2,
         areaId: 1,
       },
       {
@@ -156,7 +156,7 @@ const UsuariosAdmin = () => {
         apellido_paterno: "Morales",
         apellido_materno: "Flores",
         correo: "carmen.morales@ejemplo.com",
-        rolId: 2,
+        rolId: 1,
         areaId: 1,
       },
       {
@@ -165,7 +165,7 @@ const UsuariosAdmin = () => {
         apellido_paterno: "Herrera",
         apellido_materno: "Díaz",
         correo: "roberto.herrera@ejemplo.com",
-        rolId: 3,
+        rolId: 2,
         areaId: 1,
       },
       {

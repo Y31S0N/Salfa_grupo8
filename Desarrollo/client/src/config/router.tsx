@@ -40,9 +40,10 @@ import ListadoAreas from "../page/private/listar-areas";
 import ListadoUsuarios from "../page/private/listarUsuarios";
 import RoleBasedRedirect from "../components/RoleBasedRedirect";
 import PaginaCurso from "../page/private/ver_contenido";
+import DetalleUsuarioLecciones from "../page/private/vista-perfil-rh";
 
 // Definimos un tipo para los roles permitidos
-type UserRole = "Administrador" | "Trabajador" | "Usuario";
+type UserRole = "Administrador" | "Usuario";
 
 // Definimos la interfaz para los props de ProtectedRoute
 interface ProtectedRouteProps {
@@ -87,7 +88,7 @@ export const router = createBrowserRouter([
         index: true,
         path: "",
         element: (
-          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+          <ProtectedRoute allowedRoles={["Administrador"]}>
             <Listado_cursos />
           </ProtectedRoute>
         ),
@@ -96,7 +97,7 @@ export const router = createBrowserRouter([
         index: true,
         path: "home",
         element: (
-          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+          <ProtectedRoute allowedRoles={["Administrador"]}>
             <Listado_cursos />
           </ProtectedRoute>
         ),
@@ -112,7 +113,7 @@ export const router = createBrowserRouter([
       {
         path: "listado_cursos",
         element: (
-          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+          <ProtectedRoute allowedRoles={["Administrador"]}>
             <Listado_cursos />
           </ProtectedRoute>
         ),
@@ -165,7 +166,7 @@ export const router = createBrowserRouter([
       {
         path: "listarUsuarios",
         element: (
-          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+          <ProtectedRoute allowedRoles={["Administrador"]}>
             <ListadoUsuarios />
           </ProtectedRoute>
         ),
@@ -173,7 +174,7 @@ export const router = createBrowserRouter([
       {
         path: "nuevo_usuario",
         element: (
-          <ProtectedRoute allowedRoles={["Administrador", "Trabajador"]}>
+          <ProtectedRoute allowedRoles={["Administrador"]}>
             <N_usuario />
           </ProtectedRoute>
         ),
@@ -197,6 +198,10 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard-perfil-rh/:id",
         element: <DetalleUsuarioRRHH />,
+      },
+      {
+        path: "/vista-perfil-rh/:id",
+        element: <DetalleUsuarioLecciones />,
       },
       {
         path: "perfilUsuario",

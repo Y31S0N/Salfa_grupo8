@@ -204,7 +204,7 @@ export const  deleteAsignacion = async (req, res) => {
         const usuariosDeArea = await prisma.usuario.findMany({
             where: {
               areaId: parseInt(areaId),
-              rolId: 3,
+              rolId: 2,
             },
             select: { rut: true },
         });

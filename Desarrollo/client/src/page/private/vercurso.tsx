@@ -43,6 +43,14 @@ type Leccion = {
   contenidos?: Contenido[];
 };
 
+type Contenido = {
+  id_contenido: number;
+  nombre_contenido: string;
+  indice_archivo: number;
+  url: string;
+  tipo_contenido: string;
+};
+
 export default function Vercurso() {
   const { id } = useParams<{ id: string }>();
 
@@ -176,10 +184,15 @@ export default function Vercurso() {
   };
 
   const handleToggleCurso = async () => {
-    if (!curso.estado_curso && !verificarRequisitosMinimos(curso)) {
+    // si el curso.estado_curso es false, significa que el curso está actualmente DESHABILITADO
+    console.log(!curso?.estado_curso); //ESTO ESTA BIEN QUE SEA TRUE, QUIERE DECIR QUE EL CURSO ESTA DESHABILITADO
+    
+    
+    if (!curso.estado_curso && verificarRequisitosMinimos(curso)) {
       toast.error(
         "El curso debe tener al menos un módulo con una lección y un contenido para ser habilitado"
       );
+      console.log('Estado falso y no cumple con requisitos');
       return;
     }
 

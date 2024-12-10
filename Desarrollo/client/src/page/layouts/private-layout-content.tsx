@@ -94,10 +94,6 @@ const PrivateLayout_content: React.FC<PrivateLayoutContentProps> = ({
             icon={<Activity size={20} />}
             text="Usuarios vista trabajador"
           />,
-        ];
-        break;
-      case "Trabajador":
-        roleSpecificItems = [
           <NavItem
             key="profile-worker"
             to="/perfil"

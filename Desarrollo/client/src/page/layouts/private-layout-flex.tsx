@@ -97,10 +97,6 @@ export default function PrivateLayout_flex() {
             icon={<Activity size={20} />}
             text="Gestión de usuarios"
           />,
-        ];
-        break;
-      case "Trabajador":
-        roleSpecificItems = [
           <NavItem
             key="courses-worker"
             to="/listado_cursos"

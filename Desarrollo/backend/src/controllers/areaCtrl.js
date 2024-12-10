@@ -160,7 +160,7 @@ export const obtenerUsuariosPorArea = async (req, res) => {
         const usuarios = await prisma.Usuario.findMany({
             where: {
                 areaId: parseInt(id_area),
-                rolId: 3,
+                rolId: 2,
             },
         });
 

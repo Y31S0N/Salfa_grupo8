@@ -176,7 +176,7 @@ export const obtenerEstadisticasCursos = async (req, res) => {
         cursoAsignados: {
           where: {
             usuario: {
-              rolId: 3
+              rolId: 2
             }
           },
           include: {
@@ -464,7 +464,7 @@ export const obtenerUsuariosPorCurso = async (req, res) => {
       where: {
         cursoId: parseInt(id),
         usuario: {
-          rolId: 3
+          rolId: 2
         }
       },
       include: {
@@ -556,7 +556,8 @@ export const verificarRequisitosMinimos = (curso) => {
   if (!curso.modulos || curso.modulos.length === 0) {
     return false;
   }
-
+  console.log('Si tiene modulos');
+  
   // Verificar que todos los módulos tengan al menos una lección
   const todosLosModulosConLeccion = curso.modulos.every(modulo => 
     modulo.lecciones && modulo.lecciones.length > 0

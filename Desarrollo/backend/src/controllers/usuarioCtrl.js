@@ -157,30 +157,31 @@ export const obtenerUsuarios = async (req, res) => {
         },
       });
     }
+    
 
     // Obtener el estado de Firebase para cada usuario
-    const usuariosConEstado = await Promise.all(
-      usuarios.map(async (usuario) => {
-        try {
-          const userRecord = await auth.getUserByEmail(usuario.correo);
-          return {
-            ...usuario,
-            estadoFirebase: !userRecord.disabled,
-          };
-        } catch (error) {
-          console.error(
-            `Error al obtener estado de Firebase para ${usuario.correo}:`,
-            error
-          );
-          return {
-            ...usuario,
-            estadoFirebase: true, // valor por defecto si hay error
-          };
-        }
-      })
-    );
+    // const usuariosConEstado = await Promise.all(
+    //   usuarios.map(async (usuario) => {
+    //     try {
+    //       const userRecord = await auth.getUserByEmail(usuario.correo);
+    //       return {
+    //         ...usuario,
+    //         estadoFirebase: !userRecord.disabled,
+    //       };
+    //     } catch (error) {
+    //       console.error(
+    //         `Error al obtener estado de Firebase para ${usuario.correo}:`,
+    //         error
+    //       );
+    //       return {
+    //         ...usuario,
+    //         estadoFirebase: true, // valor por defecto si hay error
+    //       };
+    //     }
+    //   })
+    // );
 
-    res.json({ usuarios: usuariosConEstado });
+    res.json({ usuarios: usuarios });
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
     res.status(500).json({
@@ -423,7 +424,6 @@ export const actualizarUsuario = async (req, res) => {
 export const crearUsuariosBulk = async (req, res) => {
   const { usuarios } = req.body;
   const resultados = [];
-  console.log(usuarios);
   try {
     for (const usuario of usuarios) {
       try {
@@ -484,8 +484,6 @@ export const crearUsuariosBulk = async (req, res) => {
     // Enviar resumen de resultados
     const exitosos = resultados.filter((r) => r.success).length;
     const fallidos = resultados.filter((r) => !r.success).length;
-    console.log(exitosos);
-    console.log(fallidos);
     res.status(200).json({
       mensaje: `Proceso completado. ${exitosos} usuarios creados exitosamente, ${fallidos} fallidos.`,
       resultados: resultados,

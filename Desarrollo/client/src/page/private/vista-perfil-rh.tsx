@@ -68,8 +68,6 @@ export default function DetalleUsuarioLecciones() {
   useEffect(() => {
     fetchUsuarioCursos();
   }, [id]);
-  console.log(usuario);
-  
 
   const generatePDF = () => {
     if (!usuario) return;
