@@ -41,7 +41,7 @@ Plataforma web empresarial para **Salfamantenciones** enfocada en la gestión de
 ## 📂 Estructura del Proyecto  
 
 ```plaintext
-proyecto/  
+Producto-fusion-Salfa/  
 ├── backend/ # Servidor Express (Patrón MVC + DAO)  
 │   ├── src/  
 │   │   ├── controllers/  
